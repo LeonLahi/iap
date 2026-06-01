@@ -11,7 +11,7 @@ namespace iap.API.Interfaces
     {
         Task<List<T>> GetAllAsync();
         Task<T?> GetByIdAsync(int id); // ? as possible that id is not found so will return null
-        // Task<T> CreateAsync(T entity);
+        Task<T> CreateAsync(T entity);
         // Task<T?> DeleteAsync(int id);
     }
 }

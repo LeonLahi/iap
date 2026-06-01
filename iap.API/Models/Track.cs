@@ -16,6 +16,8 @@ namespace iap.API.Models
        public string? CoverArtUrl { get; set; }
        public DateTimeOffset UploadedAt { get; set; }
        public DateTimeOffset? UpdatedAt { get; set; }
+       public bool IsDeleted { get; set; }  
+       public DateTimeOffset? DeletedAt { get; set; } 
        public string? OriginalTitle { get; set; }
        public string? OriginalArtist { get; set; }
        public string? OriginalAlbumName { get; set; }
