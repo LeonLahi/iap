@@ -22,6 +22,8 @@ namespace iap.API.Mappers
                 CoverArtUrl = track.CoverArtUrl,
                 UploadedAt = track.UploadedAt,
                 UpdatedAt = track.UpdatedAt,
+                IsDeleted = track.IsDeleted,
+                DeletedAt = track.DeletedAt,
                 OriginalTitle = track.OriginalTitle,
                 OriginalArtist = track.OriginalArtist,
                 OriginalAlbumName = track.OriginalAlbumName,

@@ -26,19 +26,19 @@ namespace iap.API.Repository
 
     }
 
-    public async Task<T?> DeleteAsync(int id)
-    {
-        var entity = await _context.Set<T>().FindAsync(id);
+    // public async Task<T?> DeleteAsync(int id)
+    // {
+    //     var entity = await _context.Set<T>().FindAsync(id);
 
-        if(entity == null)
-        {
-            return null;
-        }
+    //     if(entity == null)
+    //     {
+    //         return null;
+    //     }
 
-        _context.Set<T>().Remove(entity);
-        await _context.SaveChangesAsync();
-        return entity;
-    }
+    //     _context.Set<T>().Remove(entity);
+    //     await _context.SaveChangesAsync();
+    //     return entity;
+    // }
 
     public virtual async Task<List<T>> GetAllAsync()
     {

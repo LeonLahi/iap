@@ -20,9 +20,11 @@ namespace iap.API.Controllers
     {
         private readonly IapDbContext _context;
         private readonly ITrackRepository _trackRepo;
-        public TrackController(IapDbContext context, ITrackRepository trackRepo)
+        private readonly ITrackService _trackService;
+        public TrackController(IapDbContext context, ITrackRepository trackRepo, ITrackService trackService)
         {
             _trackRepo = trackRepo;
+            _trackService = trackService;
             _context = context;
         }
 
@@ -50,44 +52,52 @@ namespace iap.API.Controllers
             return Ok(track.ToTrackDto());
         }
 
-        // [HttpPost]
+        [HttpPost]
 
-        // public async Task<IActionResult> Create([FromBody] CreateTrackRequestDto trackDto)
-        // {
-        //     var trackModel = trackDto.ToTrackFromCreateDto();
-        //     await _trackRepo.CreateAsync(trackModel);
-        //     return CreatedAtAction(nameof(GetById), new {id = trackModel.Id}, trackModel.ToTrackDto());
-        // }
+        public async Task<IActionResult> Create([FromBody] CreateTrackRequestDto trackDto)
+        {
+            var trackModel = trackDto.ToTrackFromCreateDto();
+            trackModel.UserId = 1;
 
-        // [HttpPut]
-        // [Route("{id}")]
+            
+            if (trackModel == null)
+            {
+                return NotFound();
+            }
+            
+            await _trackRepo.CreateAsync(trackModel);
+            return CreatedAtAction(nameof(GetById), new {id = trackModel.Id}, trackModel.ToTrackDto());
+        }
 
-        // public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateTrackRequestDto updateDto)
-        // {
-        //     var trackModel = await _trackRepo.UpdateTrackAsync(id, updateDto);
+        [HttpPut]
+        [Route("{id}")]
 
-        //     if (trackModel == null)
-        //     {
-        //         return NotFound();
-        //     }
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateTrackRequestDto updateDto)
+        {
+            var trackModel = await _trackRepo.UpdateTrackAsync(id, updateDto);
 
-        //     return Ok(trackModel.ToTrackDto());
-        // }
+            if (trackModel == null)
+            {
+                return NotFound();
+            }
 
-        // [HttpDelete]
-        // [Route("{id}")]
+            return Ok(trackModel.ToTrackDto());
+        }
 
-        // public async Task<IActionResult> Delete([FromRoute] int id)
-        // {
-        //     var trackModel = await _trackRepo.DeleteAsync(id);
+        [HttpDelete]
+        [Route("{id}")]
 
-        //     if (trackModel == null)
-        //     {
-        //         return NotFound();
-        //     }
+        public async Task<IActionResult> DeleteTrackAsync([FromRoute] int id)
+        {
+            var trackModel = await _trackService.DeleteTrackAsync(id);
 
-        //     return NoContent();
-        // }
+            if (trackModel == null)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
     }
 
 }

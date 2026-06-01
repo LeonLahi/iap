@@ -28,24 +28,36 @@ namespace iap.API.Repository
       return await _context.Tracks.Include(t => t.TrackGenres).ThenInclude(tg => tg.Genre).FirstOrDefaultAsync(t => t.Id == id);
     }
 
-    // public async Task<Track?> UpdateTrackAsync(int id, UpdateTrackRequestDto trackDto)
-    // {
-    //     var existingTrack = await _context.Tracks.FirstOrDefaultAsync(x => x.Id == id);
+    public async Task<Track?> UpdateTrackAsync(int id, UpdateTrackRequestDto trackDto)
+    {
+        var existingTrack = await _context.Tracks.FirstOrDefaultAsync(x => x.Id == id);
 
-    //     if(existingTrack == null)
-    //     {
-    //         return null;
-    //     }
+        if(existingTrack == null)
+        {
+            return null;
+        }
 
-    //     existingTrack.Title = trackDto.Title ?? existingTrack.Title;
-    //     existingTrack.Artist = trackDto.Artist ?? existingTrack.Artist;
-    //     existingTrack.AlbumName = trackDto.AlbumName ?? existingTrack.AlbumName;
-    //     existingTrack.CoverArtUrl = trackDto.CoverArtUrl ?? existingTrack.CoverArtUrl;
-    //     existingTrack.UpdatedAt = DateTimeOffset.UtcNow;  // server sets this
+        // Allow user to update custom details for track to override original details 
+        // Original fields are populated by metadata or are null if not found
+        existingTrack.Title = trackDto.Title ?? existingTrack.Title;
+        existingTrack.Artist = trackDto.Artist ?? existingTrack.Artist;
+        existingTrack.AlbumName = trackDto.AlbumName ?? existingTrack.AlbumName;
+        existingTrack.CoverArtUrl = trackDto.CoverArtUrl ?? existingTrack.CoverArtUrl;
+        existingTrack.UpdatedAt = DateTimeOffset.UtcNow;  // server sets this
 
-    //     await _context.SaveChangesAsync();
+        await _context.SaveChangesAsync();
 
-    //     return existingTrack;
-    // }
+        return existingTrack;
+    }
+
+    public async Task<Track?> DeleteTrackAsync(Track track)
+    {
+        track.IsDeleted = true;
+        track.DeletedAt = DateTimeOffset.UtcNow;  // server sets this
+
+        await _context.SaveChangesAsync();
+
+        return track;
+    }
   }
 }

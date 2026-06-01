@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using iap.API.Data;
 
@@ -11,9 +12,11 @@ using iap.API.Data;
 namespace iap.API.Migrations
 {
     [DbContext(typeof(IapDbContext))]
-    partial class IapDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260601085638_AddSoftDeleteToTracks")]
+    partial class AddSoftDeleteToTracks
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -107,16 +110,10 @@ namespace iap.API.Migrations
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset>("DeletedAt")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDefault")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
@@ -180,14 +177,8 @@ namespace iap.API.Migrations
                     b.Property<string>("CoverArtUrl")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset>("DeletedAt")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<int>("DurationSeconds")
                         .HasColumnType("int");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
 
                     b.Property<string>("OriginalAlbumName")
                         .HasColumnType("nvarchar(max)");

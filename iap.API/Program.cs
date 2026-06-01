@@ -31,6 +31,7 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddScoped<ITrackRepository, TrackRepository>();
+builder.Services.AddScoped<ITrackService, TrackService>();
 builder.Services.AddScoped<IGenreRepository, GenreRepository>();
 builder.Services.AddScoped<ITrackGenreRepository, TrackGenreRepository>();
 builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
