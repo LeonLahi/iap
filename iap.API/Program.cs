@@ -4,6 +4,8 @@ using iap.API.Interfaces;
 using iap.API.Repository;
 using iap.API.Services;
 using Microsoft.EntityFrameworkCore;
+using FluentValidation;
+using iap.API.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Add fluent validation
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add<ValidationFilter>();
+});
+
+// Keep your validator registration
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
 builder.Services.AddControllers().AddNewtonsoftJson(options =>
 {
@@ -46,6 +59,28 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// Catches errors from ValidateAndThrow and displays corresponding error messages
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (ValidationException ex)
+    {
+        context.Response.StatusCode = 400; // Bad Request
+        context.Response.ContentType = "application/json";
+
+        var errors = ex.Errors.Select(x => new 
+        { 
+            Property = x.PropertyName, 
+            Error = x.ErrorMessage 
+        });
+
+        await context.Response.WriteAsJsonAsync(new { Errors = errors });
+    }
+});
 
 app.UseHttpsRedirection();
 app.MapControllers();

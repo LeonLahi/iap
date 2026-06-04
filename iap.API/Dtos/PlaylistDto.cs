@@ -14,7 +14,10 @@ namespace iap.API.Dtos
         public string? CoverArtUrl { get; set; }
         public bool IsDefault { get; set; }
         public PlaylistType Type { get; set; }   
-        public DateTimeOffset CreatedAt { get; set; }   
+        public DateTimeOffset CreatedAt { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTimeOffset? DeletedAt { get; set; }
+        public DateTimeOffset? UpdatedAt { get; set; }
         public int? ParentId { get; set; }
         public int UserId { get; set; }
         public List<TrackDto> Tracks { get; set; } = new List<TrackDto>();

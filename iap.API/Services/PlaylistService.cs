@@ -9,6 +9,9 @@ using iap.API.Data;
 using iap.API.Dtos;
 using System.Formats.Tar;
 using iap.API.Mappers;
+using iap.API.Validators;
+using FluentValidation;
+using iap.API.Exceptions;
 
 namespace iap.API.Services
 {
@@ -21,7 +24,79 @@ namespace iap.API.Services
         {
             _playlistRepository = playlistRepository;
             _trackRepository = trackRepository;
+
         }
+
+        public async Task<PlaylistDto?> CreateAsync(CreatePlaylistRequestDto playlistDto)
+        {
+            // Check name unique
+            if(await _playlistRepository.GetByNameAsync(playlistDto.Name))
+            {
+                throw new ConflictException("A playlist with this name already exists");
+            }
+            
+
+            // Get model columns from dto to populate for new object
+            var playlistModel = playlistDto.ToPlaylistFromCreateDto();
+            playlistModel.UserId = 1;
+            playlistModel.CreatedAt = DateTime.UtcNow;
+            playlistModel.IsDefault = false;
+            playlistModel.IsDeleted = false;
+
+            if(playlistModel == null)
+            {
+                return null;
+            }
+
+            // TODO: Set global query to filter out deleted records
+
+            // Call repo to create playlist object
+            await _playlistRepository.CreateAsync(playlistModel);
+
+
+            return playlistModel.ToPlaylistDto();
+            
+        }
+
+        // public async Task<PlaylistDto?> UpdateAsync(int id, UpdatePlaylistRequestDto updateDto)
+        // {
+
+        //     var existingPlaylist = await _playlistRepository.GetByIdAsync(id);
+
+        //     if(existingPlaylist == null)
+        //     {
+        //         return null;
+        //     }
+
+        //     // Allow user to update custom details for track to override original details 
+        //     // Original fields are populated by metadata or are null if not found
+        //     existingPlaylist.Name = updateDto.Name ?? existingPlaylist.Name;
+        //     existingPlaylist.Description = updateDto.Description ?? existingPlaylist.Description;
+        //     existingPlaylist.CoverArtUrl = updateDto.CoverArtUrl ?? existingPlaylist.CoverArtUrl;
+        //     existingPlaylist.UpdatedAt = DateTimeOffset.UtcNow;  // server sets this
+
+        //     var updated = await _playlistRepository.UpdateAsync(existingPlaylist);
+
+        //     return updated?.ToPlaylistDto();
+        // }
+
+        // public async Task<PlaylistDto?> DeleteAsync(int id)
+        // {
+        //     // Get playlist from repo
+        //     var playlist = await _playlistRepository.GetByIdAsync(id);
+
+        //     if(playlist == null)
+        //     {
+        //         return null;
+        //     }
+
+        //     // TODO: Set global query to filter out deleted records
+
+        //     // Call repo to delete playlist
+        //     var updated = await _playlistRepository.DeleteAsync(playlist);
+        //     return updated?.ToPlaylistDto();
+            
+        // }
 
         // public async Task<PlaylistDto?> AddTrackAsync(int playlistId, int trackId)
         // {
