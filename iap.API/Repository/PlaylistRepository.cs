@@ -28,6 +28,30 @@ namespace iap.API.Repository
       return await _context.Playlists.Include(pt => pt.PlaylistTracks).ThenInclude(pt => pt.Track).FirstOrDefaultAsync(p => p.Id == id);
     }
 
+    public async Task<bool> GetByNameAsync(string name)
+    {
+      return await _context.Playlists.AnyAsync(pt => pt.Name == name);
+    }
+
+
+    // public async Task<Playlist?> UpdateAsync(Playlist playlist)
+    // {
+    //     _context.Playlists.Update(playlist);
+    //     await _context.SaveChangesAsync();
+
+    //     return playlist;
+    // }
+
+    // public async Task<Playlist?> DeleteAsync(Playlist playlist)
+    // {
+    //     playlist.IsDeleted = true;
+    //     playlist.DeletedAt = DateTimeOffset.UtcNow;  // server sets this
+
+    //     await _context.SaveChangesAsync();
+
+    //     return playlist;
+    // }
+
     // public async Task<PlaylistTrack?> GetPlaylistTrackAsync (int playlistId, int trackId)
     // {
     //     // Get from join table
