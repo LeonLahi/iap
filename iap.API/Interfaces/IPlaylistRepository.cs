@@ -16,5 +16,6 @@ namespace iap.API.Interfaces
         // Task<Playlist?> DeleteAsync(Playlist playlist);
         Task<bool> GetByNameAsync(string name);
         // Task<bool> GetByLastDefaultNameAsync();
+        Task<string> GetUniqueDefaultNameAsync();
     }
 }

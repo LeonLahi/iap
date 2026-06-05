@@ -12,7 +12,7 @@ namespace iap.API.Validators
         public CreatePlaylistValidator()
         {
             // Name validation
-            RuleFor(p => p.Name).MustBeValidName();
+            RuleFor(p => p.Name).MaximumLength(180).WithMessage("Name exceeds 180 characters");
 
             // Description validation
             RuleFor(p => p.Description).MaximumLength(360).WithMessage("Description exceeds 360 characters");

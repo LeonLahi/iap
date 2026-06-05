@@ -29,28 +29,21 @@ namespace iap.API.Services
 
         public async Task<PlaylistDto?> CreateAsync(CreatePlaylistRequestDto playlistDto)
         {
-            // User entered name?
-            // if(playlistDto.Name == null)
-            // {
-            //     // TODO: Find latest default playlist name, add one e.g. New Playlist #n
-            //     if(await _playlistRepository.GetByLastDefaultNameAsync())
-            //     {
-            //         playlistDto.Name = "New playlist test";
-            //     }
-            //     else
-            //     {
-            //         playlistDto.Name = "New playlist test first";
-            //     }
-            // }
-            // else
-            // {
+            // Set default name if not entered
+            if(string.IsNullOrWhiteSpace(playlistDto.Name))
+            {
+                // Find latest default playlist name, add one to number in name to make unique
+                playlistDto.Name = await _playlistRepository.GetUniqueDefaultNameAsync();
+            }
+            else
+            {
                 // Check name unique
                 if(await _playlistRepository.GetByNameAsync(playlistDto.Name))
                 {
                     throw new ConflictException("A playlist with this name already exists");
                 }
                 
-            // }
+            }
             
 
             // Get model columns from dto to populate for new object

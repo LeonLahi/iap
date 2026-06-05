@@ -9,6 +9,7 @@ using iap.API.Data;
 using iap.API.Dtos;
 using Microsoft.AspNetCore.Http.HttpResults;
 using System.Formats.Tar;
+using System.Globalization;
 
 namespace iap.API.Repository
 {
@@ -33,12 +34,26 @@ namespace iap.API.Repository
       return await _context.Playlists.AnyAsync(pt => pt.Name == name);
     }
 
-    // TODO: Fetch New Playlist #n with highest n. If not exist, default to 1
-    // public async Task<bool> GetByLastDefaultNameAsync()
-    // {
+    public async Task<string> GetUniqueDefaultNameAsync()
+    {
+      // TODO: Implement user login functionality and remove hardcoded user id
+      var tempUserId = 1;
 
-    //   return await _context.Playlists.AnyAsync(pt => pt.Name == "New Playlist #");
-    // }
+      var defaultNames = await _context.Playlists
+                                .Where(p => p.UserId == tempUserId && p.Name.StartsWith("New Playlist"))
+                                .Select(p => p.Name)
+                                .ToListAsync();
+
+      // Trim to get numbers
+      var numbers = defaultNames.Select(n => int.Parse(n.Split("#")[1]))
+                                          .ToList();
+
+      // Find largest number to get next default name
+      int maxNumber = numbers.Any() ? numbers.Max() : 0; 
+      int nextNumber = maxNumber + 1;
+
+      return $"New Playlist #{nextNumber}";
+    }
 
 
 
