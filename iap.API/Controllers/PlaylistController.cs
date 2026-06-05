@@ -61,8 +61,8 @@ namespace iap.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = resultDto.Id }, resultDto);
         }
         
-        [HttpPut]
-        [Route("{id}")]
+        // [HttpPut]
+        // [Route("{id}")]
 
         // public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdatePlaylistRequestDto updateDto)
         // {

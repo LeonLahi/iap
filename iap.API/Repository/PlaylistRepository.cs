@@ -33,6 +33,14 @@ namespace iap.API.Repository
       return await _context.Playlists.AnyAsync(pt => pt.Name == name);
     }
 
+    // TODO: Fetch New Playlist #n with highest n. If not exist, default to 1
+    // public async Task<bool> GetByLastDefaultNameAsync()
+    // {
+
+    //   return await _context.Playlists.AnyAsync(pt => pt.Name == "New Playlist #");
+    // }
+
+
 
     // public async Task<Playlist?> UpdateAsync(Playlist playlist)
     // {
