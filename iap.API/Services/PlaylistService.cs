@@ -68,27 +68,28 @@ namespace iap.API.Services
             
         }
 
-        // public async Task<PlaylistDto?> UpdateAsync(int id, UpdatePlaylistRequestDto updateDto)
-        // {
+        public async Task<PlaylistDto?> UpdateAsync(int id, UpdatePlaylistRequestDto updateDto)
+        {
 
-        //     var existingPlaylist = await _playlistRepository.GetByIdAsync(id);
+            var existingPlaylist = await _playlistRepository.GetByIdAsync(id);
 
-        //     if(existingPlaylist == null)
-        //     {
-        //         return null;
-        //     }
+            if(existingPlaylist == null)
+            {
+                return null;
+            }
 
-        //     // Allow user to update custom details for track to override original details 
-        //     // Original fields are populated by metadata or are null if not found
-        //     existingPlaylist.Name = updateDto.Name ?? existingPlaylist.Name;
-        //     existingPlaylist.Description = updateDto.Description ?? existingPlaylist.Description;
-        //     existingPlaylist.CoverArtUrl = updateDto.CoverArtUrl ?? existingPlaylist.CoverArtUrl;
-        //     existingPlaylist.UpdatedAt = DateTimeOffset.UtcNow;  // server sets this
+            // Allow user to update custom details for track to override original details
+            // If same EF Core leaves current data 
+            // Original fields are populated by metadata or are null if not found
+            existingPlaylist.Name = updateDto.Name ?? existingPlaylist.Name;
+            existingPlaylist.Description = updateDto.Description;
+            existingPlaylist.CoverArtUrl = updateDto.CoverArtUrl;
+            existingPlaylist.UpdatedAt = DateTimeOffset.UtcNow;  // server sets this
 
-        //     var updated = await _playlistRepository.UpdateAsync(existingPlaylist);
+            var updated = await _playlistRepository.UpdateAsync(existingPlaylist.Id, existingPlaylist);
 
-        //     return updated?.ToPlaylistDto();
-        // }
+            return updated?.ToPlaylistDto();
+        }
 
         // public async Task<PlaylistDto?> DeleteAsync(int id)
         // {

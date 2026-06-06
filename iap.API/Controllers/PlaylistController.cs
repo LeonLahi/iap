@@ -61,20 +61,20 @@ namespace iap.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = resultDto.Id }, resultDto);
         }
         
-        // [HttpPut]
-        // [Route("{id}")]
+        [HttpPut]
+        [Route("{id}")]
 
-        // public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdatePlaylistRequestDto updateDto)
-        // {
-        //     var playlistModel = await _playlistService.UpdateAsync(id, updateDto);
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdatePlaylistRequestDto updateDto)
+        {
+            var playlistModel = await _playlistService.UpdateAsync(id, updateDto);
 
-        //     if (playlistModel == null)
-        //     {
-        //         return NotFound();
-        //     }
+            if (playlistModel == null)
+            {
+                return NotFound();
+            }
 
-        //     return Ok(playlistModel);
-        // }
+            return Ok(playlistModel);
+        }
 
         // [HttpDelete("{id}")]
         // public async Task<IActionResult> DeleteAsync([FromRoute] int id)

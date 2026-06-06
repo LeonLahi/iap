@@ -7,11 +7,13 @@ using iap.API.Dtos;
 
 namespace iap.API.Validators
 {
-    public class CreatePlaylistValidator : AbstractValidator<CreatePlaylistRequestDto>
+    public class UpdatePlaylistValidator : AbstractValidator<UpdatePlaylistRequestDto>
     {
-        public CreatePlaylistValidator()
+        public UpdatePlaylistValidator()
         {
-            RuleFor(p => p.Name)
+            RuleFor(p => p.Name!)
+            // Does not allow default name when updating
+            .NotEmpty().WithMessage("Playlist name required.")
             .MustBeValidName();
 
             RuleFor(p => p.Description!)
@@ -22,7 +24,5 @@ namespace iap.API.Validators
             .MustBeValidImage()
             .When(p => !string.IsNullOrEmpty(p.CoverArtUrl));
         }
-
-
     }
 }

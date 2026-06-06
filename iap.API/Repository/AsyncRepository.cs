@@ -58,8 +58,7 @@ namespace iap.API.Repository
         {
             return null;
         }
-
-
+        
         _context.Entry(existing).CurrentValues.SetValues(entity);
         await _context.SaveChangesAsync();
 
