@@ -53,6 +53,30 @@ namespace iap.API.Controllers
             return Ok(Playlist.ToPlaylistDto());
         }
 
+        [HttpGet("deleted")]
+
+        public async Task<IActionResult> GetAllDeleted()
+        {
+            var Playlists = await _playlistRepo.GetAllDeletedAsync();
+            var PlaylistDto = Playlists.Select(pt => pt.ToPlaylistDto());
+
+            return Ok(PlaylistDto);
+        }
+
+        [HttpGet("{id}/deleted")]
+
+        public async Task<IActionResult> GetByIdDeleted([FromRoute] int id)
+        {
+            var Playlist = await _playlistRepo.GetByIdDeletedAsync(id);
+
+            if (Playlist == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(Playlist.ToPlaylistDto());
+        }
+
         [HttpPost]
 
         public async Task<IActionResult> Create([FromBody] CreatePlaylistRequestDto playlistDto)
@@ -80,6 +104,19 @@ namespace iap.API.Controllers
         public async Task<IActionResult> SoftDeleteAsync([FromRoute] int id)
         {
             var playlistModel = await _playlistService.SoftDeletePlaylistAsync(id);
+
+            if (playlistModel == null)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+
+        [HttpPost("{id}/restore")]
+        public async Task<IActionResult> UndoSoftDeleteAsync([FromRoute] int id)
+        {
+            var playlistModel = await _playlistService.UndoSoftDeletePlaylistAsync(id);
 
             if (playlistModel == null)
             {

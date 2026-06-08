@@ -20,5 +20,7 @@ namespace iap.API.Interfaces
         Task<Playlist?> SoftDeletePlaylistAsync(Playlist playlist);
         Task<List<Playlist>> GetAllChildPlaylists(int ParentId);
         Task<int> GetActiveChildCount(int id);
+        Task<List<Playlist>> GetAllDeletedAsync();
+        Task<Playlist?> GetByIdDeletedAsync(int id);
     }
 }

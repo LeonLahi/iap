@@ -139,6 +139,38 @@ namespace iap.API.Services
 
         }
 
+        public async Task<PlaylistDto?> UndoSoftDeletePlaylistAsync(int id)
+        {
+            // Get deleted playlist from repo
+            var playlist = await _playlistRepository.GetByIdDeletedAsync(id);
+
+            if(playlist == null)
+            {
+                return null;
+            }
+
+            // Restore playlist so is not filtered out of playlist queries
+            playlist.IsDeleted = false;
+            playlist.DeletedAt = null;
+
+            // Restore children playlists if present
+            if(playlist.Type.Equals("Folder") || playlist.Children is not null)
+            {
+
+                foreach (var childPlaylist in playlist.Children)
+                {
+                    childPlaylist.IsDeleted = false;
+                    childPlaylist.DeletedAt = null; // Set deleted at to same as parent playlist
+                }
+            }
+
+            // Call repo to update deleted properties
+            var updated = await _playlistRepository.UpdateAsync(playlist.Id, playlist);
+
+            return updated?.ToPlaylistDto();
+            
+        }
+
         // public async Task<PlaylistDto?> AddTrackAsync(int playlistId, int trackId)
         // {
 

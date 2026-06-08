@@ -27,11 +27,30 @@ namespace iap.API.Repository
                                      .ToListAsync();
     }
 
+    public async Task<List<Playlist>> GetAllDeletedAsync()
+    {
+      return await _context.Playlists.Include(pt => pt.PlaylistTracks).ThenInclude(pt => pt.Track)
+                                      // Fetch children playlist and each track
+                                     .Include(c => c.Children).ThenInclude(c => c.PlaylistTracks).ThenInclude(ct => ct.Track)
+                                     .Where(p => p.IsDeleted)
+                                     .ToListAsync();
+    }
+
     public override async Task<Playlist?> GetByIdAsync(int id)
     {
       return await _context.Playlists.Include(pt => pt.PlaylistTracks).ThenInclude(pt => pt.Track)
                                       // Fetch children playlist and each track
                                      .Include(c => c.Children).ThenInclude(c => c.PlaylistTracks).ThenInclude(ct => ct.Track)
+                                     .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    public async Task<Playlist?> GetByIdDeletedAsync(int id)
+    {
+      return await _context.Playlists.AsNoTracking()
+                                     .Include(pt => pt.PlaylistTracks).ThenInclude(pt => pt.Track)
+                                      // Fetch children playlist and each track
+                                     .Include(c => c.Children).ThenInclude(c => c.PlaylistTracks).ThenInclude(ct => ct.Track)
+                                     .Where(p => p.IsDeleted)
                                      .FirstOrDefaultAsync(p => p.Id == id);
     }
 
