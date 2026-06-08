@@ -14,6 +14,7 @@ namespace iap.API.Interfaces
         // Task<PlaylistDto?> DeleteTrackAsync(int playlistId, int trackId);
         Task<PlaylistDto?> CreateAsync(CreatePlaylistRequestDto playlistDto);
         Task<PlaylistDto?> UpdateAsync(int id, UpdatePlaylistRequestDto playlistDto);
-        // Task<PlaylistDto?> DeleteAsync(int id);
+        Task<PlaylistDto?> SoftDeletePlaylistAsync(int id);
+        Task<PlaylistDeleteImpactDto?> GetDeleteImpactAsync(int id);
     }
 }

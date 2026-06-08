@@ -21,12 +21,33 @@ namespace iap.API.Repository
 
     public override async Task<List<Playlist>> GetAllAsync()
     {
-      return await _context.Playlists.Include(pt => pt.PlaylistTracks).ThenInclude(pt => pt.Track).ToListAsync();
+      return await _context.Playlists.Include(pt => pt.PlaylistTracks).ThenInclude(pt => pt.Track)
+                                      // Fetch children playlist and each track
+                                     .Include(c => c.Children).ThenInclude(c => c.PlaylistTracks).ThenInclude(ct => ct.Track)
+                                     .ToListAsync();
     }
 
     public override async Task<Playlist?> GetByIdAsync(int id)
     {
-      return await _context.Playlists.Include(pt => pt.PlaylistTracks).ThenInclude(pt => pt.Track).FirstOrDefaultAsync(p => p.Id == id);
+      return await _context.Playlists.Include(pt => pt.PlaylistTracks).ThenInclude(pt => pt.Track)
+                                      // Fetch children playlist and each track
+                                     .Include(c => c.Children).ThenInclude(c => c.PlaylistTracks).ThenInclude(ct => ct.Track)
+                                     .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    public async Task<List<Playlist>> GetAllChildPlaylists(int ParentId)
+    {
+      // Select all playlists that contain parent id 
+      return await _context.Playlists.Where(p => p.ParentId == ParentId && !p.IsDeleted)
+                                                              .ToListAsync();
+    }
+
+    public async Task<int> GetActiveChildCount(int id)
+    {
+      // Get quantity of playlists that are in a specific playlist folder
+      return await _context.Playlists.Where(p => p.ParentId == id && !p.IsDeleted)
+                                      .CountAsync();
+                                    
     }
 
     public async Task<bool> GetByNameAsync(string name)
@@ -65,15 +86,12 @@ namespace iap.API.Repository
     //     return playlist;
     // }
 
-    // public async Task<Playlist?> DeleteAsync(Playlist playlist)
-    // {
-    //     playlist.IsDeleted = true;
-    //     playlist.DeletedAt = DateTimeOffset.UtcNow;  // server sets this
+    public async Task<Playlist?> SoftDeletePlaylistAsync(Playlist playlist)
+    {
+        await _context.SaveChangesAsync();
 
-    //     await _context.SaveChangesAsync();
-
-    //     return playlist;
-    // }
+        return playlist;
+    }
 
     // public async Task<PlaylistTrack?> GetPlaylistTrackAsync (int playlistId, int trackId)
     // {

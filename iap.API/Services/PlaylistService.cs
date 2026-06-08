@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -52,6 +53,7 @@ namespace iap.API.Services
             playlistModel.CreatedAt = DateTime.UtcNow;
             playlistModel.IsDefault = false;
             playlistModel.IsDeleted = false;
+            
 
             if(playlistModel == null)
             {
@@ -91,23 +93,51 @@ namespace iap.API.Services
             return updated?.ToPlaylistDto();
         }
 
-        // public async Task<PlaylistDto?> DeleteAsync(int id)
-        // {
-        //     // Get playlist from repo
-        //     var playlist = await _playlistRepository.GetByIdAsync(id);
+        public async Task<PlaylistDto?> SoftDeletePlaylistAsync(int id)
+        {
+            // Get playlist from repo
+            var playlist = await _playlistRepository.GetByIdAsync(id);
 
-        //     if(playlist == null)
-        //     {
-        //         return null;
-        //     }
+            if(playlist == null)
+            {
+                return null;
+            }
 
-        //     // TODO: Set global query to filter out deleted records
+            playlist.IsDeleted = true;
+            playlist.DeletedAt = DateTimeOffset.UtcNow;  // server sets this
 
-        //     // Call repo to delete playlist
-        //     var updated = await _playlistRepository.DeleteAsync(playlist);
-        //     return updated?.ToPlaylistDto();
+            // Delete children playlists if present
+            if(playlist.Type.Equals("Folder") || playlist.Children is not null)
+            {
+
+                foreach (var childPlaylist in playlist.Children)
+                {
+                    childPlaylist.IsDeleted = true;
+                    childPlaylist.DeletedAt = playlist.DeletedAt; // Set deleted at to same as parent playlist
+                }
+            }
+
+            // Call repo to update deleted properties
+            var updated = await _playlistRepository.UpdateAsync(playlist.Id, playlist);
+
+            return updated?.ToPlaylistDto();
             
-        // }
+        }
+
+        public async Task<PlaylistDeleteImpactDto?> GetDeleteImpactAsync(int id)
+        {
+            int childCount = await _playlistRepository.GetActiveChildCount(id);
+
+            return new PlaylistDeleteImpactDto
+            {
+                ChildCount = childCount,
+                HasChildren = childCount > 0,
+                WarningMessage = childCount > 0 
+                    ? $"Deleting this folder will automatically delete the {childCount} sub-playlists inside it."
+                    : null // Return null if 0 sub-playlists
+            };
+
+        }
 
         // public async Task<PlaylistDto?> AddTrackAsync(int playlistId, int trackId)
         // {

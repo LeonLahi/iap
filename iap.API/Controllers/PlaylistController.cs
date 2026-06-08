@@ -76,18 +76,25 @@ namespace iap.API.Controllers
             return Ok(playlistModel);
         }
 
-        // [HttpDelete("{id}")]
-        // public async Task<IActionResult> DeleteAsync([FromRoute] int id)
-        // {
-        //     var playlistModel = await _playlistService.DeleteAsync(id);
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> SoftDeleteAsync([FromRoute] int id)
+        {
+            var playlistModel = await _playlistService.SoftDeletePlaylistAsync(id);
 
-        //     if (playlistModel == null)
-        //     {
-        //         return NotFound();
-        //     }
+            if (playlistModel == null)
+            {
+                return NotFound();
+            }
 
-        //     return NoContent();
-        // }
+            return NoContent();
+        }
+
+        [HttpGet("{id}/delete-impact")]
+        public async Task<IActionResult> GetDeleteImpactAsync([FromRoute] int id)
+        {
+            var impactReport = await _playlistService.GetDeleteImpactAsync(id);
+            return Ok(impactReport);
+        }
 
         // [HttpPost("iap.API/Playlist/{playlistId}/Track/{trackId}")]
         // public async Task<IActionResult> AddTrack([FromRoute] int playlistId, [FromRoute] int trackId)

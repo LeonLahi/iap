@@ -17,5 +17,8 @@ namespace iap.API.Interfaces
         Task<bool> GetByNameAsync(string name);
         // Task<bool> GetByLastDefaultNameAsync();
         Task<string> GetUniqueDefaultNameAsync();
+        Task<Playlist?> SoftDeletePlaylistAsync(Playlist playlist);
+        Task<List<Playlist>> GetAllChildPlaylists(int ParentId);
+        Task<int> GetActiveChildCount(int id);
     }
 }

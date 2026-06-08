@@ -24,6 +24,9 @@ namespace iap.API.Mappers
                 DeletedAt = playlist.DeletedAt,
                 UpdatedAt = playlist.UpdatedAt,
                 ParentId = playlist.ParentId,
+                Children = playlist.Children != null
+                ? playlist.Children.Select(child => child.ToPlaylistDto()).ToList()
+                : new List<PlaylistDto>(),
                 UserId = playlist.UserId,
                 Tracks = playlist.PlaylistTracks.Select(pt => pt.Track.ToTrackDto()).ToList()
             };
@@ -36,6 +39,7 @@ namespace iap.API.Mappers
                 Name = dto.Name,
                 Description = dto.Description,
                 CoverArtUrl = dto.CoverArtUrl,
+                Type = dto.Type
                 // UserId set in controller from JWT token
             };
         }
