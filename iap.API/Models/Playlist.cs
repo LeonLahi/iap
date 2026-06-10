@@ -13,7 +13,10 @@ namespace iap.API.Models
         public PlaylistType Type { get; set; }      
         public string? CoverArtUrl { get; set; }
         public bool IsDefault { get; set; }  
-        public DateTimeOffset CreatedAt { get; set; }   
+        public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset? UpdatedAt { get; set; }
+        public bool IsDeleted { get; set; }
+        public DateTimeOffset? DeletedAt { get; set; }
         public int? ParentId { get; set; }
         public Playlist? Parent  { get; set; } = null!;
         public ICollection<Playlist> Children { get; set; } = new List<Playlist>();

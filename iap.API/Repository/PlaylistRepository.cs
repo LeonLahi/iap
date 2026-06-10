@@ -9,6 +9,7 @@ using iap.API.Data;
 using iap.API.Dtos;
 using Microsoft.AspNetCore.Http.HttpResults;
 using System.Formats.Tar;
+using System.Globalization;
 
 namespace iap.API.Repository
 {
@@ -20,12 +21,96 @@ namespace iap.API.Repository
 
     public override async Task<List<Playlist>> GetAllAsync()
     {
-      return await _context.Playlists.Include(pt => pt.PlaylistTracks).ThenInclude(pt => pt.Track).ToListAsync();
+      return await _context.Playlists.Include(pt => pt.PlaylistTracks).ThenInclude(pt => pt.Track)
+                                      // Fetch children playlist and each track
+                                     .Include(c => c.Children).ThenInclude(c => c.PlaylistTracks).ThenInclude(ct => ct.Track)
+                                     .ToListAsync();
     }
 
     public override async Task<Playlist?> GetByIdAsync(int id)
     {
-      return await _context.Playlists.Include(pt => pt.PlaylistTracks).ThenInclude(pt => pt.Track).FirstOrDefaultAsync(p => p.Id == id);
+      return await _context.Playlists.Include(pt => pt.PlaylistTracks).ThenInclude(pt => pt.Track)
+                                      // Fetch children playlist and each track
+                                     .Include(c => c.Children).ThenInclude(c => c.PlaylistTracks).ThenInclude(ct => ct.Track)
+                                     .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    public async Task<List<Playlist>> GetAllDeletedAsync()
+    {
+      return await _context.Playlists.IgnoreQueryFilters()
+                                     .Include(pt => pt.PlaylistTracks).ThenInclude(pt => pt.Track)
+                                      // Fetch children playlist and each track
+                                     .Include(c => c.Children).ThenInclude(c => c.PlaylistTracks).ThenInclude(ct => ct.Track)
+                                     .Where(p => p.IsDeleted)
+                                     .ToListAsync();
+    }
+
+    public async Task<Playlist?> GetByIdDeletedAsync(int id)
+    {
+      return await _context.Playlists.IgnoreQueryFilters()
+                                     .Include(pt => pt.PlaylistTracks).ThenInclude(pt => pt.Track)
+                                      // Fetch children playlist and each track
+                                     .Include(c => c.Children).ThenInclude(c => c.PlaylistTracks).ThenInclude(ct => ct.Track)
+                                     .Where(p => p.IsDeleted)
+                                     .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    public async Task<List<Playlist>> GetAllChildPlaylists(int ParentId)
+    {
+      // Select all playlists that contain parent id 
+      return await _context.Playlists.Where(p => p.ParentId == ParentId && !p.IsDeleted)
+                                                              .ToListAsync();
+    }
+
+    public async Task<int> GetActiveChildCount(int id)
+    {
+      // Get quantity of playlists that are in a specific playlist folder
+      return await _context.Playlists.Where(p => p.ParentId == id && !p.IsDeleted)
+                                      .CountAsync();
+                                    
+    }
+
+    public async Task<bool> GetByNameAsync(string name)
+    {
+      return await _context.Playlists.AnyAsync(pt => pt.Name == name);
+    }
+
+    public async Task<string> GetUniqueDefaultNameAsync()
+    {
+      // TODO: Implement user login functionality and remove hardcoded user id
+      var tempUserId = 1;
+
+      var defaultNames = await _context.Playlists
+                                .Where(p => p.UserId == tempUserId && p.Name.StartsWith("New Playlist"))
+                                .Select(p => p.Name)
+                                .ToListAsync();
+
+      // Trim to get numbers
+      var numbers = defaultNames.Select(n => int.Parse(n.Split("#")[1]))
+                                          .ToList();
+
+      // Find largest number to get next default name
+      int maxNumber = numbers.Any() ? numbers.Max() : 0; 
+      int nextNumber = maxNumber + 1;
+
+      return $"New Playlist #{nextNumber}";
+    }
+
+
+
+    // public async Task<Playlist?> UpdateAsync(Playlist playlist)
+    // {
+    //     _context.Playlists.Update(playlist);
+    //     await _context.SaveChangesAsync();
+
+    //     return playlist;
+    // }
+
+    public async Task<Playlist?> SoftDeletePlaylistAsync(Playlist playlist)
+    {
+        await _context.SaveChangesAsync();
+
+        return playlist;
     }
 
     // public async Task<PlaylistTrack?> GetPlaylistTrackAsync (int playlistId, int trackId)

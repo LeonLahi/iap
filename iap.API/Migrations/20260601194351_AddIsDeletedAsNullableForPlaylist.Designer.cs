@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using iap.API.Data;
 
@@ -11,9 +12,11 @@ using iap.API.Data;
 namespace iap.API.Migrations
 {
     [DbContext(typeof(IapDbContext))]
-    partial class IapDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260601194351_AddIsDeletedAsNullableForPlaylist")]
+    partial class AddIsDeletedAsNullableForPlaylist
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -128,9 +131,6 @@ namespace iap.API.Migrations
 
                     b.Property<int>("Type")
                         .HasColumnType("int");
-
-                    b.Property<DateTimeOffset?>("UpdatedAt")
-                        .HasColumnType("datetimeoffset");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");

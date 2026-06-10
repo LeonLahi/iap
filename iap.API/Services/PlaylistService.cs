@@ -1,4 +1,5 @@
 using System;
+using System.Data;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,6 +10,9 @@ using iap.API.Data;
 using iap.API.Dtos;
 using System.Formats.Tar;
 using iap.API.Mappers;
+using iap.API.Validators;
+using FluentValidation;
+using iap.API.Exceptions;
 
 namespace iap.API.Services
 {
@@ -21,6 +25,150 @@ namespace iap.API.Services
         {
             _playlistRepository = playlistRepository;
             _trackRepository = trackRepository;
+
+        }
+
+        public async Task<PlaylistDto?> CreateAsync(CreatePlaylistRequestDto playlistDto)
+        {
+            // Set default name if not entered
+            if(string.IsNullOrWhiteSpace(playlistDto.Name))
+            {
+                // Find latest default playlist name, add one to number in name to make unique
+                playlistDto.Name = await _playlistRepository.GetUniqueDefaultNameAsync();
+            }
+            else
+            {
+                // Check name unique
+                if(await _playlistRepository.GetByNameAsync(playlistDto.Name))
+                {
+                    throw new ConflictException("A playlist with this name already exists");
+                }
+                
+            }
+            
+
+            // Get model columns from dto to populate for new object
+            var playlistModel = playlistDto.ToPlaylistFromCreateDto();
+            playlistModel.UserId = 1;
+            playlistModel.CreatedAt = DateTime.UtcNow;
+            playlistModel.IsDefault = false;
+            playlistModel.IsDeleted = false;
+            
+
+            if(playlistModel == null)
+            {
+                return null;
+            }
+
+            // TODO: Set global query to filter out deleted records
+
+            // Call repo to create playlist object
+            await _playlistRepository.CreateAsync(playlistModel);
+
+
+            return playlistModel.ToPlaylistDto();
+            
+        }
+
+        public async Task<PlaylistDto?> UpdateAsync(int id, UpdatePlaylistRequestDto updateDto)
+        {
+
+            var existingPlaylist = await _playlistRepository.GetByIdAsync(id);
+
+            if(existingPlaylist == null)
+            {
+                return null;
+            }
+
+            // Allow user to update custom details for track to override original details
+            // If same EF Core leaves current data 
+            // Original fields are populated by metadata or are null if not found
+            existingPlaylist.Name = updateDto.Name ?? existingPlaylist.Name;
+            existingPlaylist.Description = updateDto.Description;
+            existingPlaylist.CoverArtUrl = updateDto.CoverArtUrl;
+            existingPlaylist.UpdatedAt = DateTimeOffset.UtcNow;  // server sets this
+
+            var updated = await _playlistRepository.UpdateAsync(existingPlaylist.Id, existingPlaylist);
+
+            return updated?.ToPlaylistDto();
+        }
+
+        public async Task<PlaylistDto?> SoftDeletePlaylistAsync(int id)
+        {
+            // Get playlist from repo
+            var playlist = await _playlistRepository.GetByIdAsync(id);
+
+            if(playlist == null)
+            {
+                return null;
+            }
+
+            playlist.IsDeleted = true;
+            playlist.DeletedAt = DateTimeOffset.UtcNow;  // server sets this
+
+            // Delete children playlists if present
+            if(playlist.Type.Equals("Folder") || playlist.Children is not null)
+            {
+
+                foreach (var childPlaylist in playlist.Children)
+                {
+                    childPlaylist.IsDeleted = true;
+                    childPlaylist.DeletedAt = playlist.DeletedAt; // Set deleted at to same as parent playlist
+                }
+            }
+
+            // Call repo to update deleted properties
+            var updated = await _playlistRepository.UpdateAsync(playlist.Id, playlist);
+
+            return updated?.ToPlaylistDto();
+            
+        }
+
+        public async Task<PlaylistDeleteImpactDto?> GetDeleteImpactAsync(int id)
+        {
+            int childCount = await _playlistRepository.GetActiveChildCount(id);
+
+            return new PlaylistDeleteImpactDto
+            {
+                ChildCount = childCount,
+                HasChildren = childCount > 0,
+                WarningMessage = childCount > 0 
+                    ? $"Deleting this folder will automatically delete the {childCount} sub-playlists inside it."
+                    : null // Return null if 0 sub-playlists
+            };
+
+        }
+
+        public async Task<PlaylistDto?> UndoSoftDeletePlaylistAsync(int id)
+        {
+            // Get deleted playlist from repo
+            var playlist = await _playlistRepository.GetByIdDeletedAsync(id);
+
+            if(playlist == null)
+            {
+                return null;
+            }
+
+            // Restore playlist so is not filtered out of playlist queries
+            playlist.IsDeleted = false;
+            playlist.DeletedAt = null;
+
+            // Restore children playlists if present
+            if(playlist.Type.Equals("Folder") || playlist.Children is not null)
+            {
+
+                foreach (var childPlaylist in playlist.Children)
+                {
+                    childPlaylist.IsDeleted = false;
+                    childPlaylist.DeletedAt = null; // Set deleted at to same as parent playlist
+                }
+            }
+
+            // Call repo to update deleted properties
+            var updated = await _playlistRepository.UpdateAsync(playlist.Id, playlist);
+
+            return updated?.ToPlaylistDto();
+            
         }
 
         // public async Task<PlaylistDto?> AddTrackAsync(int playlistId, int trackId)
