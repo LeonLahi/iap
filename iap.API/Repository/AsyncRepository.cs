@@ -26,27 +26,29 @@ namespace iap.API.Repository
 
     }
 
-    // public async Task<T?> DeleteAsync(int id)
-    // {
-    //     var entity = await _context.Set<T>().FindAsync(id);
+    public async Task<T?> DeleteAsync(int id)
+    {
+        var entity = await _context.Set<T>().FindAsync(id);
 
-    //     if(entity == null)
-    //     {
-    //         return null;
-    //     }
+        if(entity == null)
+        {
+            return null;
+        }
 
-    //     _context.Set<T>().Remove(entity);
-    //     await _context.SaveChangesAsync();
-    //     return entity;
-    // }
+        _context.Set<T>().Remove(entity);
+        await _context.SaveChangesAsync();
+        return entity;
+    }
 
     public virtual async Task<List<T>> GetAllAsync()
     {
+      // TODO: Set global query to filter out deleted records
       return await _context.Set<T>().ToListAsync();
     }
 
     public virtual async Task<T?> GetByIdAsync(int id)
     {
+      // TODO: Set global query to filter out deleted records
       return await _context.Set<T>().FindAsync(id);
     }
 
@@ -58,7 +60,6 @@ namespace iap.API.Repository
         {
             return null;
         }
-
 
         _context.Entry(existing).CurrentValues.SetValues(entity);
         await _context.SaveChangesAsync();

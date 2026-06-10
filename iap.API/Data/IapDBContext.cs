@@ -20,6 +20,13 @@ namespace iap.API.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Filter out soft-deleted records
+            modelBuilder.Entity<Playlist>()
+                .HasQueryFilter(p => !p.IsDeleted);
+
+            modelBuilder.Entity<Track>()
+                .HasQueryFilter(t => !t.IsDeleted);
+
             // Composite primary keys for join tables
             modelBuilder.Entity<PlaylistTrack>()
                 .HasKey(pt => new { pt.PlaylistId, pt.TrackId });

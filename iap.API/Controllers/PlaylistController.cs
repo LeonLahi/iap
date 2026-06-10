@@ -53,6 +53,86 @@ namespace iap.API.Controllers
             return Ok(Playlist.ToPlaylistDto());
         }
 
+        [HttpGet("deleted")]
+
+        public async Task<IActionResult> GetAllDeleted()
+        {
+            var Playlists = await _playlistRepo.GetAllDeletedAsync();
+            var PlaylistDto = Playlists.Select(pt => pt.ToPlaylistDto());
+
+            return Ok(PlaylistDto);
+        }
+
+        [HttpGet("{id}/deleted")]
+
+        public async Task<IActionResult> GetByIdDeleted([FromRoute] int id)
+        {
+            var Playlist = await _playlistRepo.GetByIdDeletedAsync(id);
+
+            if (Playlist == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(Playlist.ToPlaylistDto());
+        }
+
+        [HttpPost]
+
+        public async Task<IActionResult> Create([FromBody] CreatePlaylistRequestDto playlistDto)
+        {
+            var resultDto = await _playlistService.CreateAsync(playlistDto);
+            return CreatedAtAction(nameof(GetById), new { id = resultDto.Id }, resultDto);
+        }
+        
+        [HttpPut]
+        [Route("{id}")]
+
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdatePlaylistRequestDto updateDto)
+        {
+            var playlistModel = await _playlistService.UpdateAsync(id, updateDto);
+
+            if (playlistModel == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(playlistModel);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> SoftDeleteAsync([FromRoute] int id)
+        {
+            var playlistModel = await _playlistService.SoftDeletePlaylistAsync(id);
+
+            if (playlistModel == null)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+
+        [HttpPost("{id}/restore")]
+        public async Task<IActionResult> UndoSoftDeleteAsync([FromRoute] int id)
+        {
+            var playlistModel = await _playlistService.UndoSoftDeletePlaylistAsync(id);
+
+            if (playlistModel == null)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+
+        [HttpGet("{id}/delete-impact")]
+        public async Task<IActionResult> GetDeleteImpactAsync([FromRoute] int id)
+        {
+            var impactReport = await _playlistService.GetDeleteImpactAsync(id);
+            return Ok(impactReport);
+        }
+
         // [HttpPost("iap.API/Playlist/{playlistId}/Track/{trackId}")]
         // public async Task<IActionResult> AddTrack([FromRoute] int playlistId, [FromRoute] int trackId)
         // {

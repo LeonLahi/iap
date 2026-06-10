@@ -12,5 +12,10 @@ namespace iap.API.Interfaces
     {
         // Task<PlaylistDto?> AddTrackAsync(int playlistId, int trackId);
         // Task<PlaylistDto?> DeleteTrackAsync(int playlistId, int trackId);
+        Task<PlaylistDto?> CreateAsync(CreatePlaylistRequestDto playlistDto);
+        Task<PlaylistDto?> UpdateAsync(int id, UpdatePlaylistRequestDto playlistDto);
+        Task<PlaylistDto?> SoftDeletePlaylistAsync(int id);
+        Task<PlaylistDto?> UndoSoftDeletePlaylistAsync(int id);
+        Task<PlaylistDeleteImpactDto?> GetDeleteImpactAsync(int id);
     }
 }

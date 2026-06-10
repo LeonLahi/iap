@@ -7,8 +7,8 @@ namespace iap.API.Dtos
 {
     public class UpdatePlaylistRequestDto
     {
-        public string Name { get; set; } = String.Empty;
-        public string? Description { get; set; }   
-        public string? CoverArtUrl { get; set; }  
+        public string? Name { get; set; } = null;
+        public string? Description { get; set; } = null;   
+        public string? CoverArtUrl { get; set; } = null;
     }
 }
