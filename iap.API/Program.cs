@@ -6,6 +6,7 @@ using iap.API.Services;
 using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 using iap.API.Filters;
+using iap.API.MIddleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,10 @@ builder.Services.AddControllers().AddNewtonsoftJson(options =>
 {
     options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
 });
+
+// Add global exception handler
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 
 builder.Services.AddDbContext<IapDbContext>(options =>
@@ -81,6 +86,12 @@ app.Use(async (context, next) =>
         await context.Response.WriteAsJsonAsync(new { Errors = errors });
     }
 });
+
+// Include for global exception handler
+app.UseExceptionHandler();
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
 
 app.UseHttpsRedirection();
 app.MapControllers();
