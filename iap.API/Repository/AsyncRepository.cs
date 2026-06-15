@@ -66,5 +66,10 @@ namespace iap.API.Repository
 
         return existing;
     }
+
+    public async Task SaveAsync()
+    {
+      await _context.SaveChangesAsync();
+    }
   }
 }
