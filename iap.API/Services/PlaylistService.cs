@@ -118,9 +118,9 @@ namespace iap.API.Services
             }
 
             // Call repo to update deleted properties
-            var updated = await _playlistRepository.UpdateAsync(playlist.Id, playlist);
+            await _playlistRepository.SaveAsync();
 
-            return updated?.ToPlaylistDto();
+            return playlist?.ToPlaylistDto();
             
         }
 
@@ -165,9 +165,9 @@ namespace iap.API.Services
             }
 
             // Call repo to update deleted properties
-            var updated = await _playlistRepository.UpdateAsync(playlist.Id, playlist);
+            await _playlistRepository.SaveAsync();
 
-            return updated?.ToPlaylistDto();
+            return playlist?.ToPlaylistDto();
             
         }
 
