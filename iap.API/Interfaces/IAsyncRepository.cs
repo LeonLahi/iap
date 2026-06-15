@@ -14,5 +14,6 @@ namespace iap.API.Interfaces
         Task<T> CreateAsync(T entity);
         Task<T?> UpdateAsync(int id, T entity);
         Task<T?> DeleteAsync(int id);
+        Task SaveAsync();
     }
 }

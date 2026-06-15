@@ -84,13 +84,13 @@ namespace iap.API.Services
             // If same EF Core leaves current data 
             // Original fields are populated by metadata or are null if not found
             existingPlaylist.Name = updateDto.Name ?? existingPlaylist.Name;
-            existingPlaylist.Description = updateDto.Description;
-            existingPlaylist.CoverArtUrl = updateDto.CoverArtUrl;
+            existingPlaylist.Description = updateDto.Description ?? existingPlaylist.Description;
+            existingPlaylist.CoverArtUrl = updateDto.CoverArtUrl ?? existingPlaylist.CoverArtUrl;
             existingPlaylist.UpdatedAt = DateTimeOffset.UtcNow;  // server sets this
 
-            var updated = await _playlistRepository.UpdateAsync(existingPlaylist.Id, existingPlaylist);
+            await _playlistRepository.SaveAsync();
 
-            return updated?.ToPlaylistDto();
+            return existingPlaylist?.ToPlaylistDto();
         }
 
         public async Task<PlaylistDto?> SoftDeletePlaylistAsync(int id)
@@ -118,9 +118,9 @@ namespace iap.API.Services
             }
 
             // Call repo to update deleted properties
-            var updated = await _playlistRepository.UpdateAsync(playlist.Id, playlist);
+            await _playlistRepository.SaveAsync();
 
-            return updated?.ToPlaylistDto();
+            return playlist?.ToPlaylistDto();
             
         }
 
@@ -165,9 +165,9 @@ namespace iap.API.Services
             }
 
             // Call repo to update deleted properties
-            var updated = await _playlistRepository.UpdateAsync(playlist.Id, playlist);
+            await _playlistRepository.SaveAsync();
 
-            return updated?.ToPlaylistDto();
+            return playlist?.ToPlaylistDto();
             
         }
 
