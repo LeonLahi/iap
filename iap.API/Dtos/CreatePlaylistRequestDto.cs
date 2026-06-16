@@ -12,5 +12,6 @@ namespace iap.API.Dtos
         public string? Description { get; set; }   
         public string? CoverArtUrl { get; set; }  
         public PlaylistType Type {get; set;}
+        public int? ParentId { get; set; } = null;
     }
 }

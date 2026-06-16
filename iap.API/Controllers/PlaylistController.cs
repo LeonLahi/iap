@@ -7,6 +7,7 @@ using iap.API.Dtos;
 using iap.API.Interfaces;
 using iap.API.Mappers;
 using iap.API.Models;
+using iap.API.Common;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -33,56 +34,59 @@ namespace iap.API.Controllers
 
         public async Task<IActionResult> GetAll()
         {
-            var Playlists = await _playlistRepo.GetAllAsync();
-            var PlaylistDto = Playlists.Select(pt => pt.ToPlaylistDto());
+            var result = await _playlistService.GetAllAsync();
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
 
-            return Ok(PlaylistDto);
+            return Ok(result.Value);
         }
 
         [HttpGet("{id}")]
 
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var Playlist = await _playlistRepo.GetByIdAsync(id);
+            var result = await _playlistService.GetByIdAsync(id);
 
-            if (Playlist == null)
-            {
-                return NotFound();
-            }
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
 
-            return Ok(Playlist.ToPlaylistDto());
+            return Ok(result.Value);
         }
 
         [HttpGet("deleted")]
 
         public async Task<IActionResult> GetAllDeleted()
         {
-            var Playlists = await _playlistRepo.GetAllDeletedAsync();
-            var PlaylistDto = Playlists.Select(pt => pt.ToPlaylistDto());
+            var result = await _playlistService.GetAllDeletedAsync();
 
-            return Ok(PlaylistDto);
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
+
+            return Ok(result.Value);
         }
 
         [HttpGet("{id}/deleted")]
 
         public async Task<IActionResult> GetByIdDeleted([FromRoute] int id)
         {
-            var Playlist = await _playlistRepo.GetByIdDeletedAsync(id);
+            var result = await _playlistService.GetByIdDeletedAsync(id);
 
-            if (Playlist == null)
-            {
-                return NotFound();
-            }
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
 
-            return Ok(Playlist.ToPlaylistDto());
+            return Ok(result.Value);
         }
 
         [HttpPost]
 
         public async Task<IActionResult> Create([FromBody] CreatePlaylistRequestDto playlistDto)
         {
-            var resultDto = await _playlistService.CreateAsync(playlistDto);
-            return CreatedAtAction(nameof(GetById), new { id = resultDto.Id }, resultDto);
+            var result = await _playlistService.CreateAsync(playlistDto);
+
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
+
+            return CreatedAtAction(nameof(GetById), new { id = result.Value!.Id }, result.Value);
         }
         
         [HttpPut]
@@ -90,62 +94,70 @@ namespace iap.API.Controllers
 
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdatePlaylistRequestDto updateDto)
         {
-            var playlistModel = await _playlistService.UpdateAsync(id, updateDto);
+            var result = await _playlistService.UpdateAsync(id, updateDto);
 
-            if (playlistModel == null)
-            {
-                return NotFound();
-            }
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
 
-            return Ok(playlistModel);
+            return Ok(result.Value);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> SoftDeleteAsync([FromRoute] int id)
         {
-            var playlistModel = await _playlistService.SoftDeletePlaylistAsync(id);
+            var result = await _playlistService.SoftDeletePlaylistAsync(id);
 
-            if (playlistModel == null)
-            {
-                return NotFound();
-            }
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
 
-            return NoContent();
-        }
-
-        [HttpPost("{id}/restore")]
-        public async Task<IActionResult> UndoSoftDeleteAsync([FromRoute] int id)
-        {
-            var playlistModel = await _playlistService.UndoSoftDeletePlaylistAsync(id);
-
-            if (playlistModel == null)
-            {
-                return NotFound();
-            }
-
-            return NoContent();
+            return Ok(result.Value);
         }
 
         [HttpGet("{id}/delete-impact")]
         public async Task<IActionResult> GetDeleteImpactAsync([FromRoute] int id)
         {
-            var impactReport = await _playlistService.GetDeleteImpactAsync(id);
-            return Ok(impactReport);
+            var result = await _playlistService.GetDeleteImpactAsync(id);
+            
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
+
+            return Ok(result.Value);
         }
 
-        // [HttpPost("iap.API/Playlist/{playlistId}/Track/{trackId}")]
-        // public async Task<IActionResult> AddTrack([FromRoute] int playlistId, [FromRoute] int trackId)
-        // {
+        [HttpPost("{id}/restore")]
+        public async Task<IActionResult> UndoSoftDeleteAsync([FromRoute] int id)
+        {
+            var result = await _playlistService.UndoSoftDeletePlaylistAsync(id);
 
-        //     var Playlist = await _playlistService.AddTrackAsync(playlistId, trackId);
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
 
-        //     if (Playlist == null)
-        //     {
-        //         return NotFound();
-        //     }
+            return Ok(result.Value);
+        }
 
-        //     return Ok(Playlist);
-        // }
+        [HttpPost("iap.API/playlists/{playlistId}/tracks/{trackId}/track-to-playlist")]
+        public async Task<IActionResult> AddTrack([FromRoute] int playlistId, [FromRoute] int trackId)
+        {
+
+            var result = await _playlistService.AddTrackAsync(playlistId, trackId);
+
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
+
+            return Ok(result.Value);
+        }
+
+        [HttpPost("iap.API/playlists/{folderId}/playlists/{playlistId}/playlist-to-folder")]
+        public async Task<IActionResult> AddPlaylistToFolder([FromRoute] int folderId, [FromRoute] int playlistId)
+        {
+
+            var result = await _playlistService.AddPlaylistToFolderAsync(folderId, playlistId);
+
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
+
+            return Ok(result.Value);
+        }
 
         // [HttpDelete("iap.API/Playlist/{playlistId}/Track/{trackId}")]
         // public async Task<IActionResult> DeleteTrack([FromRoute] int playlistId, [FromRoute] int trackId)

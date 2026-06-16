@@ -12,7 +12,9 @@ using System.Formats.Tar;
 using iap.API.Mappers;
 using iap.API.Validators;
 using FluentValidation;
-using iap.API.Exceptions;
+using Microsoft.AspNetCore.Http.HttpResults;
+using iap.API.Common;
+using iap.API.Repository;
 
 namespace iap.API.Services
 {
@@ -28,8 +30,61 @@ namespace iap.API.Services
 
         }
 
-        public async Task<PlaylistDto?> CreateAsync(CreatePlaylistRequestDto playlistDto)
+        public async Task<Result<IEnumerable<PlaylistDto>>> GetAllAsync()
         {
+            var playlists = await _playlistRepository.GetAllAsync();
+            var dtos = playlists.Select(p => p.ToPlaylistDto());
+            
+            return Result<IEnumerable<PlaylistDto>>.Success(dtos);
+        }
+
+        public async Task<Result<PlaylistDto>> GetByIdAsync(int id)
+        {
+            var playlist = await _playlistRepository.GetByIdAsync(id);
+
+            if (playlist is null)
+                return Result<PlaylistDto>.NotFound("Playlist not found");
+
+            return Result<PlaylistDto>.Success(playlist.ToPlaylistDto());
+        }
+
+        public async Task<Result<IEnumerable<PlaylistDto>>> GetAllDeletedAsync()
+        {
+            var playlists = await _playlistRepository.GetAllDeletedAsync();
+            var dtos = playlists.Select(p => p.ToPlaylistDto());
+            
+            return Result<IEnumerable<PlaylistDto>>.Success(dtos);
+        }
+
+        public async Task<Result<PlaylistDto>> GetByIdDeletedAsync(int id)
+        {
+            var playlist = await _playlistRepository.GetByIdDeletedAsync(id);
+
+            if (playlist is null)
+                return Result<PlaylistDto>.NotFound("Playlist not found");
+
+            return Result<PlaylistDto>.Success(playlist.ToPlaylistDto());
+        }
+
+        public async Task<Result<PlaylistDto>> CreateAsync(CreatePlaylistRequestDto playlistDto)
+        {
+            // Validate parent id
+            if (playlistDto.ParentId.HasValue)
+            {
+                // Check if can be added to a folder
+                if(playlistDto.Type == PlaylistType.Folder)
+                    return Result<PlaylistDto>.ValidationError("Cannot place a folder inside another folder.");
+
+                var playlistFolder = await _playlistRepository.GetByIdAsync((int)playlistDto.ParentId);
+
+                if(playlistFolder is null)
+                    return Result<PlaylistDto>.NotFound("Folder not found");
+
+                // Check if a folder
+                if(playlistFolder.Type != PlaylistType.Folder)
+                    return Result<PlaylistDto>.ValidationError("Parent playlist must be of type Folder.");
+            }
+
             // Set default name if not entered
             if(string.IsNullOrWhiteSpace(playlistDto.Name))
             {
@@ -40,9 +95,7 @@ namespace iap.API.Services
             {
                 // Check name unique
                 if(await _playlistRepository.GetByNameAsync(playlistDto.Name))
-                {
-                    throw new ConflictException("A playlist with this name already exists");
-                }
+                    return Result<PlaylistDto>.Conflict("A playlist with this name already exists");
                 
             }
             
@@ -53,32 +106,21 @@ namespace iap.API.Services
             playlistModel.CreatedAt = DateTime.UtcNow;
             playlistModel.IsDefault = false;
             playlistModel.IsDeleted = false;
-            
-
-            if(playlistModel == null)
-            {
-                return null;
-            }
-
-            // TODO: Set global query to filter out deleted records
 
             // Call repo to create playlist object
-            await _playlistRepository.CreateAsync(playlistModel);
+            var created = await _playlistRepository.CreateAsync(playlistModel);
 
-
-            return playlistModel.ToPlaylistDto();
+            return Result<PlaylistDto>.Success(created.ToPlaylistDto());
             
         }
 
-        public async Task<PlaylistDto?> UpdateAsync(int id, UpdatePlaylistRequestDto updateDto)
+        public async Task<Result<PlaylistDto>> UpdateAsync(int id, UpdatePlaylistRequestDto updateDto)
         {
 
             var existingPlaylist = await _playlistRepository.GetByIdAsync(id);
 
-            if(existingPlaylist == null)
-            {
-                return null;
-            }
+            if(existingPlaylist is null)
+                return Result<PlaylistDto>.NotFound("Playlist not found");
 
             // Allow user to update custom details for track to override original details
             // If same EF Core leaves current data 
@@ -90,18 +132,16 @@ namespace iap.API.Services
 
             await _playlistRepository.SaveAsync();
 
-            return existingPlaylist?.ToPlaylistDto();
+            return Result<PlaylistDto>.Success(existingPlaylist.ToPlaylistDto());
         }
 
-        public async Task<PlaylistDto?> SoftDeletePlaylistAsync(int id)
+        public async Task<Result<PlaylistDto>> SoftDeletePlaylistAsync(int id)
         {
             // Get playlist from repo
             var playlist = await _playlistRepository.GetByIdAsync(id);
 
-            if(playlist == null)
-            {
-                return null;
-            }
+            if(playlist is null)
+                return Result<PlaylistDto>.NotFound("Playlist not found");
 
             playlist.IsDeleted = true;
             playlist.DeletedAt = DateTimeOffset.UtcNow;  // server sets this
@@ -120,15 +160,21 @@ namespace iap.API.Services
             // Call repo to update deleted properties
             await _playlistRepository.SaveAsync();
 
-            return playlist?.ToPlaylistDto();
+            return Result<PlaylistDto>.Success(playlist.ToPlaylistDto());
             
         }
 
-        public async Task<PlaylistDeleteImpactDto?> GetDeleteImpactAsync(int id)
+        public async Task<Result<PlaylistDeleteImpactDto>> GetDeleteImpactAsync(int id)
         {
+            var playlistExists = await _playlistRepository.PlaylistExistsAsync(id);
+
+            if (!playlistExists)
+                return Result<PlaylistDeleteImpactDto>.NotFound("Playlist not found");
+
+
             int childCount = await _playlistRepository.GetActiveChildCount(id);
 
-            return new PlaylistDeleteImpactDto
+            var dto = new PlaylistDeleteImpactDto
             {
                 ChildCount = childCount,
                 HasChildren = childCount > 0,
@@ -137,24 +183,24 @@ namespace iap.API.Services
                     : null // Return null if 0 sub-playlists
             };
 
+            return Result<PlaylistDeleteImpactDto>.Success(dto);
+
         }
 
-        public async Task<PlaylistDto?> UndoSoftDeletePlaylistAsync(int id)
+        public async Task<Result<PlaylistDto>> UndoSoftDeletePlaylistAsync(int id)
         {
             // Get deleted playlist from repo
             var playlist = await _playlistRepository.GetByIdDeletedAsync(id);
 
-            if(playlist == null)
-            {
-                return null;
-            }
+            if(playlist is null)
+                return Result<PlaylistDto>.NotFound("Playlist not found");
 
             // Restore playlist so is not filtered out of playlist queries
             playlist.IsDeleted = false;
             playlist.DeletedAt = null;
 
             // Restore children playlists if present
-            if(playlist.Type.Equals("Folder") || playlist.Children is not null)
+            if(playlist.Type == PlaylistType.Folder || playlist.Children is not null)
             {
 
                 foreach (var childPlaylist in playlist.Children)
@@ -167,37 +213,70 @@ namespace iap.API.Services
             // Call repo to update deleted properties
             await _playlistRepository.SaveAsync();
 
-            return playlist?.ToPlaylistDto();
+            return Result<PlaylistDto>.Success(playlist.ToPlaylistDto());
             
         }
 
-        // public async Task<PlaylistDto?> AddTrackAsync(int playlistId, int trackId)
-        // {
+        public async Task<Result<PlaylistDto>> AddTrackAsync(int playlistId, int trackId)
+        {
 
-        //     // Get playlist
-        //     var playlist = await _playlistRepository.GetByIdAsync(playlistId);
-        //     if (playlist == null)
-        //     {
-        //         throw new InvalidOperationException("Cannot find playlist.");
-        //     }
+            // Get playlist
+            var playlist = await _playlistRepository.GetByIdAsync(playlistId);
+            if(playlist is null)
+                return Result<PlaylistDto>.NotFound("Playlist not found");
 
-        //     // Folder cannot have track
-        //     if (playlist.Type == PlaylistType.Folder)
-        //     {
-        //         throw new InvalidOperationException("Cannot add track to a folder playlist.");
-        //     }
+            // Folder cannot have track
+            if(playlist.Type == PlaylistType.Folder)
+                return Result<PlaylistDto>.ValidationError("Cannot add tracks to a playlist folder.");
 
-        //     // Is track already in playlist
-        //     if (playlist.PlaylistTracks.Any(pt => pt.TrackId == trackId))
-        //     {
-        //         throw new InvalidOperationException("Track is already in the playlist.");
-        //     }
+            // Check track exists
+            if(!await _trackRepository.TrackExistsAsync(trackId))
+                return Result<PlaylistDto>.NotFound("Track not found");
 
-        //     // Call repo to add track to playlist
-        //     var updated = await _playlistRepository.AddTrackAsync(playlistId, trackId);
-        //     return updated?.ToPlaylistDto();
+            // Is track already in playlist
+            if(playlist.PlaylistTracks.Any(pt => pt.TrackId == trackId))
+                return Result<PlaylistDto>.Conflict("Track is already in the playlist.");
+
+            // Call repo to add track to playlist
+            var updated = await _playlistRepository.AddTrackAsync(playlistId, trackId);
+            return Result<PlaylistDto>.Success(updated!.ToPlaylistDto());
             
-        // }
+        }
+
+        public async Task<Result<PlaylistDto>> AddPlaylistToFolderAsync(int folderId, int playlistId)
+        {
+            // Get folder
+            var playlistFolder = await _playlistRepository.GetByIdAsync(folderId);
+            if(playlistFolder is null)
+                return Result<PlaylistDto>.NotFound("Folder not found");
+
+            // Check if a folder
+            if(playlistFolder.Type != PlaylistType.Folder)
+                return Result<PlaylistDto>.ValidationError("Parent playlist must be of type Folder.");
+
+            // Get playlist to add
+            var playlistToAdd = await _playlistRepository.GetByIdAsync(playlistId);
+            if(playlistToAdd is null)
+                return Result<PlaylistDto>.NotFound("Playlist not found");
+
+            // Check if can be added to a folder
+            if(playlistToAdd.Type == PlaylistType.Folder)
+                return Result<PlaylistDto>.ValidationError("Cannot place a folder inside another folder.");
+
+            // Is playlist already in folder
+            if(playlistToAdd.ParentId == folderId)
+                return Result<PlaylistDto>.Conflict("Playlist is already in the folder.");
+
+            // Assign folderId to parentId of playlist to link
+            playlistToAdd.ParentId = folderId;
+
+            // Apply update to parentId
+            await _playlistRepository.UpdateAsync(playlistToAdd.Id, playlistToAdd);
+
+            // Display updated folder with new playlist included
+            return Result<PlaylistDto>.Success(playlistFolder.ToPlaylistDto());
+            
+        }
 
         // public async Task<PlaylistDto?> DeleteTrackAsync(int playlistId, int trackId)
         // {

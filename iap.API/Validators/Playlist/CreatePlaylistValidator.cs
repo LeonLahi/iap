@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentValidation;
 using iap.API.Dtos;
+using iap.API.Models;
 
 namespace iap.API.Validators
 {
@@ -13,6 +14,9 @@ namespace iap.API.Validators
         {
             RuleFor(p => p.Name)
             .MustBeValidName();
+
+            RuleFor(p => p.Type)
+            .IsInEnum().WithMessage("Invalid playlist type.");
 
             RuleFor(p => p.Description!)
             .MaximumLength(360).WithMessage("Description exceeds 360 characters");

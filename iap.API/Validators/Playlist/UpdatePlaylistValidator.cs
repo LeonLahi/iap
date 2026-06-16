@@ -13,7 +13,7 @@ namespace iap.API.Validators
         {
             RuleFor(p => p.Name!)
             // Does not allow default name when updating
-            .NotEmpty().WithMessage("Playlist name required.")
+            // .NotEmpty().WithMessage("Playlist name required.").When(x => x.Name != null)
             .MustBeValidName();
 
             RuleFor(p => p.Description!)
