@@ -16,6 +16,11 @@ namespace iap.API.Repository
     {
     }
 
+    public async Task<bool> TrackExistsAsync(int id)
+    {
+      return await _context.Tracks.AnyAsync(t => t.Id == id);
+    }
+
     public override async Task<List<Track>> GetAllAsync()
     {
       return await _context.Tracks.Include(t => t.TrackGenres).ThenInclude(tg => tg.Genre)
