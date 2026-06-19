@@ -57,17 +57,12 @@ namespace iap.API.Controllers
 
         public async Task<IActionResult> Create([FromBody] CreateTrackRequestDto trackDto)
         {
-            var trackModel = trackDto.ToTrackFromCreateDto();
-            trackModel.UserId = 1;
+            var result = await _trackService.CreateAsync(trackDto);
 
-            
-            if (trackModel == null)
-            {
-                return NotFound();
-            }
-            
-            await _trackRepo.CreateAsync(trackModel);
-            return CreatedAtAction(nameof(GetById), new {id = trackModel.Id}, trackModel.ToTrackDto());
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
+
+            return CreatedAtAction(nameof(GetById), new { id = result.Value!.Id }, result.Value);
         }
 
         [HttpPut]

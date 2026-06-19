@@ -33,6 +33,11 @@ namespace iap.API.Repository
       return await _context.Tracks.Include(t => t.TrackGenres).ThenInclude(tg => tg.Genre).FirstOrDefaultAsync(t => t.Id == id);
     }
 
+    public async Task<Track?> GetByTitleAndUserAsync(string title, int userId)
+    {
+        return await _context.Tracks.FirstOrDefaultAsync(t => t.Title == title && t.UserId == userId);
+    }
+
     public async Task<Track?> UpdateTrackAsync(int id, UpdateTrackRequestDto trackDto)
     {
         var existingTrack = await _context.Tracks.FirstOrDefaultAsync(x => x.Id == id);

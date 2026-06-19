@@ -13,6 +13,7 @@ namespace iap.API.Interfaces
     {
         Task<Result<IEnumerable<TrackDto>>> GetAllAsync();
         Task<Result<TrackDto>> GetByIdAsync(int id);
+        Task<Result<TrackDto>> CreateAsync(CreateTrackRequestDto trackDto);
         Task<TrackDto?> DeleteTrackAsync(int trackId);
     }
 }
