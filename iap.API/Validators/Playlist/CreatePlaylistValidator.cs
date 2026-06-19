@@ -13,7 +13,7 @@ namespace iap.API.Validators
         public CreatePlaylistValidator()
         {
             RuleFor(p => p.Name)
-            .MustBeValidName();
+            .MustBeValidLength();
 
             RuleFor(p => p.Type)
             .IsInEnum().WithMessage("Invalid playlist type.");
