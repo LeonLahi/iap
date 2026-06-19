@@ -7,6 +7,7 @@ using iap.API.Dtos;
 using iap.API.Interfaces;
 using iap.API.Mappers;
 using iap.API.Models;
+using iap.API.Common;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -32,24 +33,24 @@ namespace iap.API.Controllers
 
         public async Task<IActionResult> GetAll()
         {
-            var tracks = await _trackRepo.GetAllAsync();
-            var trackDto = tracks.Select(t => t.ToTrackDto());
+            var result = await _trackService.GetAllAsync();
 
-            return Ok(trackDto);
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
+
+            return Ok(result.Value);
         }
 
         [HttpGet("{id}")]
 
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var track = await _trackRepo.GetByIdAsync(id);
+            var result = await _trackService.GetByIdAsync(id);
 
-            if (track == null)
-            {
-                return NotFound();
-            }
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
 
-            return Ok(track.ToTrackDto());
+            return Ok(result.Value);
         }
 
         [HttpPost]
