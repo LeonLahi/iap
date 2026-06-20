@@ -16,5 +16,7 @@ namespace iap.API.Interfaces
         Task<Track?> GetByTitleAndUserAsync(string title, int userId);
         Task<Track?> UpdateTrackAsync(int id, UpdateTrackRequestDto trackDto);
         Task<Track?> DeleteTrackAsync(Track track);
+        Task<List<Track>> GetAllDeletedAsync();
+        Task<Track?> GetByIdDeletedAsync(int id);
     }
 }

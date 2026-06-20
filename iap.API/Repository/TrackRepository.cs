@@ -33,6 +33,23 @@ namespace iap.API.Repository
       return await _context.Tracks.Include(t => t.TrackGenres).ThenInclude(tg => tg.Genre).FirstOrDefaultAsync(t => t.Id == id);
     }
 
+    public async Task<List<Track>> GetAllDeletedAsync()
+    {
+      return await _context.Tracks.IgnoreQueryFilters()
+                                  .Include(t => t.TrackGenres).ThenInclude(tg => tg.Genre)
+                                  .Include(c => c.Chapters)
+                                  .Where(p => p.IsDeleted)
+                                  .ToListAsync();
+    }
+
+    public async Task<Track?> GetByIdDeletedAsync(int id)
+    {
+      return await _context.Tracks.IgnoreQueryFilters()
+                                  .Include(t => t.TrackGenres).ThenInclude(tg => tg.Genre)
+                                  .Where(p => p.IsDeleted)
+                                  .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
     public async Task<Track?> GetByTitleAndUserAsync(string title, int userId)
     {
         return await _context.Tracks.FirstOrDefaultAsync(t => t.Title == title && t.UserId == userId);

@@ -52,6 +52,30 @@ namespace iap.API.Controllers
 
             return Ok(result.Value);
         }
+    
+        [HttpGet("deleted")]
+
+        public async Task<IActionResult> GetAllDeleted()
+        {
+            var result = await _trackService.GetAllDeletedAsync();
+
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
+
+            return Ok(result.Value);
+        }
+
+        [HttpGet("{id}/deleted")]
+
+        public async Task<IActionResult> GetByIdDeleted([FromRoute] int id)
+        {
+            var result = await _trackService.GetByIdDeletedAsync(id);
+
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
+
+            return Ok(result.Value);
+        }
 
         [HttpPost]
 
@@ -78,19 +102,26 @@ namespace iap.API.Controllers
             return Ok(result.Value);
         }
 
-        [HttpDelete]
-        [Route("{id}")]
-
-        public async Task<IActionResult> DeleteTrackAsync([FromRoute] int id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> SoftDeleteAsync([FromRoute] int id)
         {
-            var trackModel = await _trackService.DeleteTrackAsync(id);
+            var result = await _trackService.SoftDeleteTrackAsync(id);
 
-            if (trackModel == null)
-            {
-                return NotFound();
-            }
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
 
-            return NoContent();
+            return Ok(result.Value);
+        }
+
+        [HttpPost("{id}/restore")]
+        public async Task<IActionResult> UndoSoftDeleteAsync([FromRoute] int id)
+        {
+            var result = await _trackService.UndoSoftDeleteTrackAsync(id);
+
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
+
+            return Ok(result.Value);
         }
     }
 

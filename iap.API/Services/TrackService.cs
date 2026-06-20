@@ -45,6 +45,24 @@ namespace iap.API.Services
             return Result<TrackDto>.Success(track.ToTrackDto());
         }
 
+        public async Task<Result<IEnumerable<TrackDto>>> GetAllDeletedAsync()
+        {
+            var tracks = await _trackRepository.GetAllDeletedAsync();
+            var dtos = tracks.Select(t => t.ToTrackDto());
+            
+            return Result<IEnumerable<TrackDto>>.Success(dtos);
+        }
+
+        public async Task<Result<TrackDto>> GetByIdDeletedAsync(int id)
+        {
+            var track = await _trackRepository.GetByIdDeletedAsync(id);
+
+            if (track is null)
+                return Result<TrackDto>.NotFound("Track not found");
+
+            return Result<TrackDto>.Success(track.ToTrackDto());
+        }
+
         public async Task<Result<TrackDto>> CreateAsync(CreateTrackRequestDto trackDto)
         {
 
@@ -89,16 +107,40 @@ namespace iap.API.Services
             return Result<TrackDto>.Success(existingTrack.ToTrackDto());
         }
 
-        public async Task<TrackDto?> DeleteTrackAsync(int trackId)
+        public async Task<Result<TrackDto>> SoftDeleteTrackAsync(int id)
         {
             // Get track from repo
-            var track = await _trackRepository.GetByIdAsync(trackId);
+            var track = await _trackRepository.GetByIdAsync(id);
 
-            // TODO: Set global query to filter out deleted records
+            if(track is null)
+                return Result<TrackDto>.NotFound("Track not found");
 
-            // Call repo to delete track from playlist
-            var updated = await _trackRepository.DeleteTrackAsync(track);
-            return updated?.ToTrackDto();
+            track.IsDeleted = true;
+            track.DeletedAt = DateTimeOffset.Now;  // server sets this
+
+            // Call repo to update deleted properties
+            await _trackRepository.SaveAsync();
+
+            return Result<TrackDto>.Success(track.ToTrackDto());
+            
+        }
+
+        public async Task<Result<TrackDto>> UndoSoftDeleteTrackAsync(int id)
+        {
+            // Get deleted track from repo
+            var track = await _trackRepository.GetByIdDeletedAsync(id);
+
+            if(track is null)
+                return Result<TrackDto>.NotFound("Track not found");
+
+            // Restore track so is not filtered out of track queries
+            track.IsDeleted = false;
+            track.DeletedAt = null;
+
+            // Call repo to update deleted properties
+            await _trackRepository.SaveAsync();
+
+            return Result<TrackDto>.Success(track.ToTrackDto());
             
         }
     }
