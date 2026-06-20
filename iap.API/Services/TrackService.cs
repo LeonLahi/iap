@@ -68,6 +68,27 @@ namespace iap.API.Services
             
         }
 
+        public async Task<Result<TrackDto>> UpdateAsync(int id, UpdateTrackRequestDto updateDto)
+        {   
+            var existingTrack = await _trackRepository.GetByIdAsync(id);
+
+            if(existingTrack is null)
+                return Result<TrackDto>.NotFound("Track not found");
+
+            // Allow user to update custom details for track to override original details
+            // If same EF Core leaves current data 
+            // Original fields are populated by metadata or are null if not found
+            existingTrack.Title = updateDto.Title ?? existingTrack.Title;
+            existingTrack.Artist = updateDto.Artist ?? existingTrack.Artist;
+            existingTrack.AlbumName = updateDto.AlbumName ?? existingTrack.AlbumName;
+            existingTrack.CoverArtUrl = updateDto.CoverArtUrl ?? existingTrack.CoverArtUrl;
+            existingTrack.UpdatedAt = DateTimeOffset.UtcNow;  // server sets this
+
+            await _trackRepository.SaveAsync();
+
+            return Result<TrackDto>.Success(existingTrack.ToTrackDto());
+        }
+
         public async Task<TrackDto?> DeleteTrackAsync(int trackId)
         {
             // Get track from repo

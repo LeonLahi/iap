@@ -70,14 +70,12 @@ namespace iap.API.Controllers
 
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateTrackRequestDto updateDto)
         {
-            var trackModel = await _trackRepo.UpdateTrackAsync(id, updateDto);
+            var result = await _trackService.UpdateAsync(id, updateDto);
 
-            if (trackModel == null)
-            {
-                return NotFound();
-            }
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
 
-            return Ok(trackModel.ToTrackDto());
+            return Ok(result.Value);
         }
 
         [HttpDelete]
