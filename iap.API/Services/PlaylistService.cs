@@ -296,5 +296,34 @@ namespace iap.API.Services
             return Result<PlaylistDto>.Success(updatedPlaylist.ToPlaylistDto());
             
         }
+
+        public async Task<Result<PlaylistDto>> DeletePlaylistFromFolderAsync(int folderId, int playlistId)
+        {
+            // Check folder exists
+            var folder = await _playlistRepository.GetByIdAsync(folderId);
+            if (folder is null)
+                return Result<PlaylistDto>.NotFound("Folder not found.");
+
+            // Check if a folder
+            if (folder.Type != PlaylistType.Folder)
+                return Result<PlaylistDto>.ValidationError("Playlist is not a folder.");
+
+            // Check playlist exists
+            var playlist = await _playlistRepository.GetByIdAsync(playlistId);
+            if (playlist is null)
+                return Result<PlaylistDto>.NotFound("Playlist not found.");
+
+            // Check playlist is in folder
+            if (playlist.ParentId != folderId)
+                return Result<PlaylistDto>.ValidationError("Playlist is not in this folder.");
+
+            // Remove from folder
+            playlist.ParentId = null;
+            await _playlistRepository.SaveAsync();
+
+            // Return updated folder
+            var updatedFolder = await _playlistRepository.GetByIdAsync(folderId);
+            return Result<PlaylistDto>.Success(updatedFolder!.ToPlaylistDto());
+        }
     }
 }

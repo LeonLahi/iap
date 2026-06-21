@@ -167,6 +167,14 @@ namespace iap.API.Controllers
             return Ok(result.Value);
         }
 
+        [HttpDelete("iap.API/playlists/{folderId}/playlists/{playlistId}/playlist-to-folder-delete")]
+        public async Task<IActionResult> DeletePlaylistFromFolder([FromRoute] int folderId, [FromRoute] int playlistId)
+        {
+            var result = await _playlistService.DeletePlaylistFromFolderAsync(folderId, playlistId);
+            
+            return result.ToActionResult(this);
+        }
+
     }
 
 }

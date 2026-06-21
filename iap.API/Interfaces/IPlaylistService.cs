@@ -23,5 +23,6 @@ namespace iap.API.Interfaces
         Task<Result<PlaylistDeleteImpactDto>> GetDeleteImpactAsync(int id);
         Task<Result<PlaylistDto>> AddTrackAsync(int playlistId, int trackId);
         Task<Result<PlaylistDto>> AddPlaylistToFolderAsync(int folderId, int playlistId);
+        Task<Result<PlaylistDto>> DeletePlaylistFromFolderAsync(int folderId, int playlistId);
     }
 }
