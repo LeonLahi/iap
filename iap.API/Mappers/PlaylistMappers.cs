@@ -39,7 +39,8 @@ namespace iap.API.Mappers
                 Name = dto.Name,
                 Description = dto.Description,
                 CoverArtUrl = dto.CoverArtUrl,
-                Type = dto.Type
+                Type = dto.Type,
+                ParentId = dto.ParentId
                 // UserId set in controller from JWT token
             };
         }

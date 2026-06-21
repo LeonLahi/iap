@@ -9,8 +9,9 @@ namespace iap.API.Interfaces
 {
     public interface IPlaylistRepository : IASyncRepository<Playlist>
     {
-        // Task<Playlist?> AddTrackAsync(int playlistId, int trackId);
-        // Task<PlaylistTrack?> GetPlaylistTrackAsync(int playlistId, int trackId);
+        Task<bool> PlaylistExistsAsync(int id);
+        Task<Playlist?> AddTrackAsync(int playlistId, int trackId);
+        Task<PlaylistTrack?> GetPlaylistTrackAsync(int playlistId, int trackId);
         // Task<Playlist?> DeleteTrackAsync(PlaylistTrack playlistTrack);
         // Task<Playlist?> UpdateAsync(Playlist playlist);
         // Task<Playlist?> DeleteAsync(Playlist playlist);

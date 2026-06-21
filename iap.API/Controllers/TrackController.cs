@@ -7,6 +7,7 @@ using iap.API.Dtos;
 using iap.API.Interfaces;
 using iap.API.Mappers;
 using iap.API.Models;
+using iap.API.Common;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -32,41 +33,60 @@ namespace iap.API.Controllers
 
         public async Task<IActionResult> GetAll()
         {
-            var tracks = await _trackRepo.GetAllAsync();
-            var trackDto = tracks.Select(t => t.ToTrackDto());
+            var result = await _trackService.GetAllAsync();
 
-            return Ok(trackDto);
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
+
+            return Ok(result.Value);
         }
 
         [HttpGet("{id}")]
 
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
-            var track = await _trackRepo.GetByIdAsync(id);
+            var result = await _trackService.GetByIdAsync(id);
 
-            if (track == null)
-            {
-                return NotFound();
-            }
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
 
-            return Ok(track.ToTrackDto());
+            return Ok(result.Value);
+        }
+    
+        [HttpGet("deleted")]
+
+        public async Task<IActionResult> GetAllDeleted()
+        {
+            var result = await _trackService.GetAllDeletedAsync();
+
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
+
+            return Ok(result.Value);
+        }
+
+        [HttpGet("{id}/deleted")]
+
+        public async Task<IActionResult> GetByIdDeleted([FromRoute] int id)
+        {
+            var result = await _trackService.GetByIdDeletedAsync(id);
+
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
+
+            return Ok(result.Value);
         }
 
         [HttpPost]
 
         public async Task<IActionResult> Create([FromBody] CreateTrackRequestDto trackDto)
         {
-            var trackModel = trackDto.ToTrackFromCreateDto();
-            trackModel.UserId = 1;
+            var result = await _trackService.CreateAsync(trackDto);
 
-            
-            if (trackModel == null)
-            {
-                return NotFound();
-            }
-            
-            await _trackRepo.CreateAsync(trackModel);
-            return CreatedAtAction(nameof(GetById), new {id = trackModel.Id}, trackModel.ToTrackDto());
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
+
+            return CreatedAtAction(nameof(GetById), new { id = result.Value!.Id }, result.Value);
         }
 
         [HttpPut]
@@ -74,29 +94,34 @@ namespace iap.API.Controllers
 
         public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateTrackRequestDto updateDto)
         {
-            var trackModel = await _trackRepo.UpdateTrackAsync(id, updateDto);
+            var result = await _trackService.UpdateAsync(id, updateDto);
 
-            if (trackModel == null)
-            {
-                return NotFound();
-            }
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
 
-            return Ok(trackModel.ToTrackDto());
+            return Ok(result.Value);
         }
 
-        [HttpDelete]
-        [Route("{id}")]
-
-        public async Task<IActionResult> DeleteTrackAsync([FromRoute] int id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> SoftDeleteAsync([FromRoute] int id)
         {
-            var trackModel = await _trackService.DeleteTrackAsync(id);
+            var result = await _trackService.SoftDeleteTrackAsync(id);
 
-            if (trackModel == null)
-            {
-                return NotFound();
-            }
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
 
-            return NoContent();
+            return Ok(result.Value);
+        }
+
+        [HttpPost("{id}/restore")]
+        public async Task<IActionResult> UndoSoftDeleteAsync([FromRoute] int id)
+        {
+            var result = await _trackService.UndoSoftDeleteTrackAsync(id);
+
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
+
+            return Ok(result.Value);
         }
     }
 

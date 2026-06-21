@@ -19,6 +19,11 @@ namespace iap.API.Repository
     {
     }
 
+    public async Task<bool> PlaylistExistsAsync(int id)
+    {
+      return await _context.Playlists.AnyAsync(p => p.Id == id);
+    }
+
     public override async Task<List<Playlist>> GetAllAsync()
     {
       return await _context.Playlists.Include(pt => pt.PlaylistTracks).ThenInclude(pt => pt.Track)
@@ -113,24 +118,34 @@ namespace iap.API.Repository
         return playlist;
     }
 
-    // public async Task<PlaylistTrack?> GetPlaylistTrackAsync (int playlistId, int trackId)
-    // {
-    //     // Get from join table
-    //     return await _context.PlaylistTracks.FirstOrDefaultAsync(x => x.PlaylistId == playlistId && x.TrackId == trackId);
-    // }
+    public async Task<PlaylistTrack?> GetPlaylistTrackAsync (int playlistId, int trackId)
+    {
+        // Get from join table
+        return await _context.PlaylistTracks.FirstOrDefaultAsync(x => x.PlaylistId == playlistId && x.TrackId == trackId);
+    }
 
-    // public async Task<Playlist?> AddTrackAsync (int playlistId, int trackId)
-    // {
-    //   var maxOrder = await _context.PlaylistTracks
-    //       .Where(pt => pt.PlaylistId == playlistId)
-    //       .MaxAsync(pt => (int?)pt.Order) ?? 0;
+    public async Task<Playlist?> AddTrackAsync (int playlistId, int trackId)
+    {
+      var maxOrder = await _context.PlaylistTracks
+          .Where(pt => pt.PlaylistId == playlistId)
+          .MaxAsync(pt => (int?)pt.Order) ?? 0; // Get latest from number of tracks or set to 0 if first
       
-    //   _context.PlaylistTracks.Add(new PlaylistTrack
-    //   {
-    //       PlaylistId = playlistId, 
-    //       TrackId = trackId,
-    //       Order = maxOrder + 1
-    //   });
+      _context.PlaylistTracks.Add(new PlaylistTrack
+      {
+          PlaylistId = playlistId, 
+          TrackId = trackId,
+          Order = maxOrder + 1 // Assign as latest track added
+      });
+
+      await _context.SaveChangesAsync();
+
+      return await GetByIdAsync(playlistId);
+    }
+
+    // public async Task<Playlist?> AddPlaylistToFolderAsync (int folderId, int playlistId)
+    // {
+
+
 
     //   await _context.SaveChangesAsync();
 

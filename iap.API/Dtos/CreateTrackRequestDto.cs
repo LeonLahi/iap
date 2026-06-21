@@ -21,5 +21,6 @@ namespace iap.API.Dtos
        public string? OriginalArtist { get; set; }
        public string? OriginalAlbumName { get; set; }
        public string? OriginalCoverArtUrl { get; set; }
+       public int UserId { get; set; }
     }
 }
