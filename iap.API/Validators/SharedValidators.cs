@@ -8,7 +8,7 @@ namespace iap.API.Validators
 {
     public static class SharedValidators
     {
-        public static IRuleBuilderOptions<T, string> MustBeValidName<T>(
+        public static IRuleBuilderOptions<T, string> MustBeValidLength<T>(
             this IRuleBuilder<T, string> ruleBuilder)
         {
             // Name playlist validation
@@ -23,6 +23,14 @@ namespace iap.API.Validators
             return ruleBuilder
                 .Must(BeAValidUrl).WithMessage("Must be a valid link.")
                 .Must(BeAnImageUrl).WithMessage("Image URL must end with .jpg, .jpeg, .png or .webp");
+        }
+
+        public static IRuleBuilderOptions<T, string> MustBeValidUrl<T>(
+            this IRuleBuilder<T, string> ruleBuilder)
+        {
+            // Name playlist validation
+            return ruleBuilder
+                .Must(BeAValidUrl).WithMessage("Must be a valid link.");
         }
 
 

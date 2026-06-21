@@ -16,6 +16,11 @@ namespace iap.API.Repository
     {
     }
 
+    public async Task<bool> TrackExistsAsync(int id)
+    {
+      return await _context.Tracks.AnyAsync(t => t.Id == id);
+    }
+
     public override async Task<List<Track>> GetAllAsync()
     {
       return await _context.Tracks.Include(t => t.TrackGenres).ThenInclude(tg => tg.Genre)
@@ -26,6 +31,28 @@ namespace iap.API.Repository
     public override async Task<Track?> GetByIdAsync(int id)
     {
       return await _context.Tracks.Include(t => t.TrackGenres).ThenInclude(tg => tg.Genre).FirstOrDefaultAsync(t => t.Id == id);
+    }
+
+    public async Task<List<Track>> GetAllDeletedAsync()
+    {
+      return await _context.Tracks.IgnoreQueryFilters()
+                                  .Include(t => t.TrackGenres).ThenInclude(tg => tg.Genre)
+                                  .Include(c => c.Chapters)
+                                  .Where(p => p.IsDeleted)
+                                  .ToListAsync();
+    }
+
+    public async Task<Track?> GetByIdDeletedAsync(int id)
+    {
+      return await _context.Tracks.IgnoreQueryFilters()
+                                  .Include(t => t.TrackGenres).ThenInclude(tg => tg.Genre)
+                                  .Where(p => p.IsDeleted)
+                                  .FirstOrDefaultAsync(p => p.Id == id);
+    }
+
+    public async Task<Track?> GetByTitleAndUserAsync(string title, int userId)
+    {
+        return await _context.Tracks.FirstOrDefaultAsync(t => t.Title == title && t.UserId == userId);
     }
 
     public async Task<Track?> UpdateTrackAsync(int id, UpdateTrackRequestDto trackDto)
