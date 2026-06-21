@@ -11,7 +11,7 @@ namespace iap.API.Interfaces
 {
     public interface IPlaylistService
     {
-        // Task<PlaylistDto?> DeleteTrackAsync(int playlistId, int trackId);
+        Task<Result<PlaylistDto>> DeleteTrackFromPlaylistAsync(int playlistId, int trackId);
         Task<Result<IEnumerable<PlaylistDto>>> GetAllAsync();
         Task<Result<PlaylistDto>> GetByIdAsync(int id);
         Task<Result<IEnumerable<PlaylistDto>>> GetAllDeletedAsync();
@@ -23,5 +23,6 @@ namespace iap.API.Interfaces
         Task<Result<PlaylistDeleteImpactDto>> GetDeleteImpactAsync(int id);
         Task<Result<PlaylistDto>> AddTrackAsync(int playlistId, int trackId);
         Task<Result<PlaylistDto>> AddPlaylistToFolderAsync(int folderId, int playlistId);
+        Task<Result<PlaylistDto>> DeletePlaylistFromFolderAsync(int folderId, int playlistId);
     }
 }

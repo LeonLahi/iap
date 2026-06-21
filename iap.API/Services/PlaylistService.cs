@@ -278,14 +278,52 @@ namespace iap.API.Services
             
         }
 
-        // public async Task<PlaylistDto?> DeleteTrackAsync(int playlistId, int trackId)
-        // {
-        //     // Call repo to get the track from the playlist
-        //     var playlistTrack = await _playlistRepository.GetPlaylistTrackAsync(playlistId, trackId);
-        //     // Call repo to delete track from playlist
-        //     var updated = await _playlistRepository.DeleteTrackAsync(playlistTrack);
-        //     return updated?.ToPlaylistDto();
+        public async Task<Result<PlaylistDto>> DeleteTrackFromPlaylistAsync(int playlistId, int trackId)
+        {
+            // Call repo to get the track from the playlist
+            var playlistTrack = await _playlistRepository.GetPlaylistTrackAsync(playlistId, trackId);
+            if (playlistTrack is null)
+                return Result<PlaylistDto>.NotFound("Track not found in playlist.");
+
+            // Call repo to delete track from playlist
+            await _playlistRepository.DeleteTrackFromPlaylistAsync(playlistId, trackId);
+
+            // Fetch updated playlist to return
+            var updatedPlaylist = await _playlistRepository.GetByIdAsync(playlistId);
+            if (updatedPlaylist is null)
+                return Result<PlaylistDto>.NotFound("Playlist not found.");
+
+            return Result<PlaylistDto>.Success(updatedPlaylist.ToPlaylistDto());
             
-        // }
+        }
+
+        public async Task<Result<PlaylistDto>> DeletePlaylistFromFolderAsync(int folderId, int playlistId)
+        {
+            // Check folder exists
+            var folder = await _playlistRepository.GetByIdAsync(folderId);
+            if (folder is null)
+                return Result<PlaylistDto>.NotFound("Folder not found.");
+
+            // Check if a folder
+            if (folder.Type != PlaylistType.Folder)
+                return Result<PlaylistDto>.ValidationError("Playlist is not a folder.");
+
+            // Check playlist exists
+            var playlist = await _playlistRepository.GetByIdAsync(playlistId);
+            if (playlist is null)
+                return Result<PlaylistDto>.NotFound("Playlist not found.");
+
+            // Check playlist is in folder
+            if (playlist.ParentId != folderId)
+                return Result<PlaylistDto>.ValidationError("Playlist is not in this folder.");
+
+            // Remove from folder
+            playlist.ParentId = null;
+            await _playlistRepository.SaveAsync();
+
+            // Return updated folder
+            var updatedFolder = await _playlistRepository.GetByIdAsync(folderId);
+            return Result<PlaylistDto>.Success(updatedFolder!.ToPlaylistDto());
+        }
     }
 }
