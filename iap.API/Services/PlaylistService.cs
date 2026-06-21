@@ -278,14 +278,23 @@ namespace iap.API.Services
             
         }
 
-        // public async Task<PlaylistDto?> DeleteTrackAsync(int playlistId, int trackId)
-        // {
-        //     // Call repo to get the track from the playlist
-        //     var playlistTrack = await _playlistRepository.GetPlaylistTrackAsync(playlistId, trackId);
-        //     // Call repo to delete track from playlist
-        //     var updated = await _playlistRepository.DeleteTrackAsync(playlistTrack);
-        //     return updated?.ToPlaylistDto();
+        public async Task<Result<PlaylistDto>> DeleteTrackFromPlaylistAsync(int playlistId, int trackId)
+        {
+            // Call repo to get the track from the playlist
+            var playlistTrack = await _playlistRepository.GetPlaylistTrackAsync(playlistId, trackId);
+            if (playlistTrack is null)
+                return Result<PlaylistDto>.NotFound("Track not found in playlist.");
+
+            // Call repo to delete track from playlist
+            await _playlistRepository.DeleteTrackFromPlaylistAsync(playlistId, trackId);
+
+            // Fetch updated playlist to return
+            var updatedPlaylist = await _playlistRepository.GetByIdAsync(playlistId);
+            if (updatedPlaylist is null)
+                return Result<PlaylistDto>.NotFound("Playlist not found.");
+
+            return Result<PlaylistDto>.Success(updatedPlaylist.ToPlaylistDto());
             
-        // }
+        }
     }
 }

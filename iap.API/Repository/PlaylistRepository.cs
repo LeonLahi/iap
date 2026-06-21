@@ -152,14 +152,31 @@ namespace iap.API.Repository
     //   return await GetByIdAsync(playlistId);
     // }
 
-    // public async Task<Playlist?> DeleteTrackAsync (PlaylistTrack playlistTrack)
-    // {
-    //     int playlistId = playlistTrack.PlaylistId;
-    //     _context.PlaylistTracks.Remove(playlistTrack);
-    //     await _context.SaveChangesAsync();
+    public async Task<bool> DeleteTrackFromPlaylistAsync(int playlistId, int trackId)
+    {
+        int rowsAffected = await _context.PlaylistTracks
+            .Where(pt => pt.PlaylistId == playlistId && pt.TrackId == trackId)
+            .ExecuteDeleteAsync();
 
-    //   return await GetByIdAsync(playlistId);
-    // }
+        _context.ChangeTracker.Clear();
+
+        if (rowsAffected > 0)
+        {
+            // Reorder remaining tracks to close the gap
+            var remaining = await _context.PlaylistTracks
+                .Where(pt => pt.PlaylistId == playlistId)
+                .OrderBy(pt => pt.Order)
+                .ToListAsync();
+
+            for (int i = 0; i < remaining.Count; i++)
+                remaining[i].Order = i + 1;
+
+            await _context.SaveChangesAsync();
+        }
+
+        // Returns true if a track has been deleted
+        return rowsAffected > 0;
+}
 
 
   }
