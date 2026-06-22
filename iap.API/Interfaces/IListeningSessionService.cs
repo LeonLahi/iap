@@ -9,9 +9,9 @@ using iap.API.Services;
 
 namespace iap.API.Interfaces
 {
-    public interface IListeningSessionRepository
+    public interface IListeningSessionService
     {
-        Task<List<ListeningSession>> GetAllAsync();
-        Task<List<ListeningSession>> GetRecentlyPlayedAsync(int limit = 20);
+        Task<Result<IEnumerable<ListeningSessionDto>>> GetAllAsync();
+        Task<Result<IEnumerable<ListeningSessionDto>>> GetRecentlyPlayedAsync();
     }
 }

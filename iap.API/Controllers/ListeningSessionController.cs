@@ -7,6 +7,7 @@ using iap.API.Dtos;
 using iap.API.Interfaces;
 using iap.API.Mappers;
 using iap.API.Models;
+using iap.API.Common;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,34 +21,29 @@ namespace iap.API.Controllers
     {
         private readonly IapDbContext _context;
         private readonly IListeningSessionRepository _listeningSessionRepo;
-        public ListeningSessionController(IapDbContext context, IListeningSessionRepository listeningSessionRepo)
+        private readonly IListeningSessionService _listeningSessionService;
+        public ListeningSessionController(IapDbContext context, IListeningSessionRepository listeningSessionRepo, IListeningSessionService listeningSessionService)
         {
             _listeningSessionRepo = listeningSessionRepo;
             _context = context;
+            _listeningSessionService = listeningSessionService;
         }
 
         [HttpGet]
 
         public async Task<IActionResult> GetAll()
         {
-            var listeningSessions = await _listeningSessionRepo.GetAllAsync();
-            var listeningSessionDto = listeningSessions.Select(ls => ls.ToListeningSessionDto());
-
-            return Ok(listeningSessionDto);
+            var result = await _listeningSessionService.GetAllAsync();
+                
+            return result.ToActionResult(this);
         }
 
-        [HttpGet("{id}")]
-
-        public async Task<IActionResult> GetById([FromRoute] int id)
+        [HttpGet("recently-played")]
+        public async Task<IActionResult> GetRecentyPlayed()
         {
-            var listeningSession = await _listeningSessionRepo.GetByIdAsync(id);
-
-            if (listeningSession == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(listeningSession.ToListeningSessionDto());
+            var result = await _listeningSessionService.GetRecentlyPlayedAsync();
+                
+            return result.ToActionResult(this);
         }
     }
 

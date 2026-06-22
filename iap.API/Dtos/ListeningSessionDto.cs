@@ -10,8 +10,6 @@ namespace iap.API.Dtos
        public int Id { get; set; } 
        public DateTimeOffset PlayedAt { get; set; }
        public int SecondsListened { get; set; }
-       public int UserId { get; set; }
-       public int TrackId { get; set; } 
        public TrackDto Track { get; set; } = null!;
     }
 }
