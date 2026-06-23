@@ -38,6 +38,14 @@ namespace iap.API.Controllers
             return result.ToActionResult(this);
         }
 
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById([FromRoute] int id)
+        {
+            var result = await _listeningSessionService.GetByIdAsync(id);
+
+            return result.ToActionResult(this);
+        }
+
         [HttpGet("recently-played")]
         public async Task<IActionResult> GetRecentyPlayed()
         {

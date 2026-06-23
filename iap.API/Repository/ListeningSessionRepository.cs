@@ -21,6 +21,13 @@ namespace iap.API.Repository
       return await _context.ListeningSessions.Include(ls => ls.Track).ToListAsync();
     }
 
+    public override async Task<ListeningSession?> GetByIdAsync(int id)
+    {
+      return await _context.ListeningSessions
+          .Include(ls => ls.Track)
+          .FirstOrDefaultAsync(ls => ls.Id == id);
+    }
+
     public async Task<List<ListeningSession>> GetRecentlyPlayedAsync(int limit = 20)
     {
         var sessions = await _context.ListeningSessions

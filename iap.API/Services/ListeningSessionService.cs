@@ -35,6 +35,16 @@ namespace iap.API.Services
             return Result<IEnumerable<ListeningSessionDto>>.Success(dtos);
         }
 
+        public async Task<Result<ListeningSessionDto>> GetByIdAsync(int id)
+        {
+            var listeningSession = await _listeningSessionRepository.GetByIdAsync(id);
+
+            if (listeningSession is null)
+                return Result<ListeningSessionDto>.NotFound("Listening session not found");
+
+            return Result<ListeningSessionDto>.Success(listeningSession.ToListeningSessionDto());
+        }
+
         public async Task<Result<IEnumerable<ListeningSessionDto>>> GetRecentlyPlayedAsync()
         {
             var listeningSessions = await _listeningSessionRepository.GetRecentlyPlayedAsync();
