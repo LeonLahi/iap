@@ -14,5 +14,7 @@ namespace iap.API.Interfaces
         Task<Result<IEnumerable<ListeningSessionDto>>> GetAllAsync();
         Task<Result<ListeningSessionDto>> GetByIdAsync(int id);
         Task<Result<IEnumerable<ListeningSessionDto>>> GetRecentlyPlayedAsync();
+        Task<Result<IEnumerable<MostPlayedDto>>> GetMostPlayedAsync();
+        Task<Result<ListeningSessionDto>> CreateAsync(CreateListeningSessionDto dto);
     }
 }

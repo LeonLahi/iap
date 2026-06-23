@@ -37,7 +37,7 @@ namespace iap.API.Controllers
                 
             return result.ToActionResult(this);
         }
-
+    
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById([FromRoute] int id)
         {
@@ -52,6 +52,26 @@ namespace iap.API.Controllers
             var result = await _listeningSessionService.GetRecentlyPlayedAsync();
                 
             return result.ToActionResult(this);
+        }
+
+        [HttpGet("most-played")]
+        public async Task<IActionResult> GetMostPlayed()
+        {
+            var result = await _listeningSessionService.GetMostPlayedAsync();
+                
+            return result.ToActionResult(this);
+        }
+
+        [HttpPost]
+
+        public async Task<IActionResult> Create([FromBody] CreateListeningSessionDto Dto)
+        {
+            var result = await _listeningSessionService.CreateAsync(Dto);
+
+            if (!result.IsSuccess)
+                return result.ToActionResult(this);
+
+            return CreatedAtAction(nameof(GetById), new { id = result.Value!.Id }, result.Value);
         }
     }
 

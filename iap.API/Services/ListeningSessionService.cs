@@ -21,10 +21,12 @@ namespace iap.API.Services
     public class ListeningSessionService : IListeningSessionService
     {
         private readonly IListeningSessionRepository _listeningSessionRepository;
+        private readonly ITrackRepository _trackRepository;
 
-        public ListeningSessionService(IListeningSessionRepository listeningSessionRepository)
+        public ListeningSessionService(IListeningSessionRepository listeningSessionRepository, ITrackRepository trackRepository)
         {
             _listeningSessionRepository = listeningSessionRepository;
+            _trackRepository = trackRepository;
         }
 
         public async Task<Result<IEnumerable<ListeningSessionDto>>> GetAllAsync()
@@ -51,6 +53,44 @@ namespace iap.API.Services
             var dtos = listeningSessions.Select(ls => ls.ToListeningSessionDto());
             
             return Result<IEnumerable<ListeningSessionDto>>.Success(dtos);
+        }
+
+        public async Task<Result<IEnumerable<MostPlayedDto>>> GetMostPlayedAsync()
+        {
+            var dtos = await _listeningSessionRepository.GetMostPlayedAsync();
+            return Result<IEnumerable<MostPlayedDto>>.Success(dtos);
+        }
+
+        public async Task<Result<ListeningSessionDto>> CreateAsync(CreateListeningSessionDto dto)
+        {
+            var track = await _trackRepository.GetByIdAsync(dto.TrackId);
+            if (track is null)
+                return Result<ListeningSessionDto>.NotFound("Track not found");
+
+            if (dto.SecondsListened < 30)
+                return Result<ListeningSessionDto>
+                    .ValidationError("Track must be listened to for at least 30 seconds to record a play.");
+
+            if (dto.SecondsListened > track.DurationSeconds)
+                return Result<ListeningSessionDto>
+                    .ValidationError("Seconds listened cannot exceed track duration.");
+
+            var session = new ListeningSession
+            {
+                UserId = 1, // TODO: Change to get userId from JWT token
+                PlayedAt = DateTimeOffset.Now,
+                SecondsListened = dto.SecondsListened,
+                TrackId = dto.TrackId
+            };
+
+            // Call repo to create listening session object
+            var created = await _listeningSessionRepository.CreateAsync(session);
+
+            var withTrack = await _listeningSessionRepository
+                .GetByIdAsync(created.Id);
+
+            return Result<ListeningSessionDto>.Success(withTrack!.ToListeningSessionDto());
+            
         }
     }
 }

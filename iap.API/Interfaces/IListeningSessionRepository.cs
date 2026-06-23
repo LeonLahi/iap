@@ -11,8 +11,7 @@ namespace iap.API.Interfaces
 {
     public interface IListeningSessionRepository : IASyncRepository<ListeningSession>
     {
-        Task<List<ListeningSession>> GetAllAsync();
-        Task<ListeningSession?> GetByIdAsync(int id);
         Task<List<ListeningSession>> GetRecentlyPlayedAsync(int limit = 20);
+        Task<List<MostPlayedDto>> GetMostPlayedAsync(int limit = 20);
     }
 }
