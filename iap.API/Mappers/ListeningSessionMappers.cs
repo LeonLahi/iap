@@ -16,8 +16,6 @@ namespace iap.API.Mappers
                 Id = listeningSession.Id,
                 PlayedAt = listeningSession.PlayedAt,
                 SecondsListened = listeningSession.SecondsListened,
-                UserId = listeningSession.UserId,
-                TrackId = listeningSession.TrackId,
                 Track = listeningSession.Track.ToTrackDto()
             };
         }

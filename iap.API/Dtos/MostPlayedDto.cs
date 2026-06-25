@@ -5,11 +5,10 @@ using System.Threading.Tasks;
 
 namespace iap.API.Dtos
 {
-    public class ListeningSessionDto
+    public class MostPlayedDto
     {
-       public int Id { get; set; } 
-       public DateTimeOffset PlayedAt { get; set; }
-       public int SecondsListened { get; set; }
        public TrackDto Track { get; set; } = null!;
+       public int PlayCount { get; set; }
+       public int TotalSecondsListened { get; set; }
     }
 }

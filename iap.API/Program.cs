@@ -55,6 +55,7 @@ builder.Services.AddScoped<ITrackGenreRepository, TrackGenreRepository>();
 builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
 builder.Services.AddScoped<IPlaylistService, PlaylistService>();
 builder.Services.AddScoped<IListeningSessionRepository, ListeningSessionRepository>();
+builder.Services.AddScoped<IListeningSessionService, ListeningSessionService>();
 
 var app = builder.Build();
 
