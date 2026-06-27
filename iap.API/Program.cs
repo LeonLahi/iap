@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 using iap.API.Filters;
 using iap.API.MIddleware;
+using Microsoft.AspNetCore.Identity;
+using iap.API.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +17,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Add Identity services
+builder.Services.AddIdentityApiEndpoints<User>()
+    .AddEntityFrameworkStores<IapDbContext>();
 
 // Add fluent validation
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
@@ -56,8 +62,12 @@ builder.Services.AddScoped<IPlaylistRepository, PlaylistRepository>();
 builder.Services.AddScoped<IPlaylistService, PlaylistService>();
 builder.Services.AddScoped<IListeningSessionRepository, ListeningSessionRepository>();
 builder.Services.AddScoped<IListeningSessionService, ListeningSessionService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 var app = builder.Build();
+
+app.UseRouting();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -87,6 +97,13 @@ app.Use(async (context, next) =>
         await context.Response.WriteAsJsonAsync(new { Errors = errors });
     }
 });
+
+// Include for authentication and authorization
+app.UseAuthentication();
+app.UseAuthorization();
+
+// Auto maps indentity endpoints for User model, including registration, login, and user management
+app.MapIdentityApi<User>();
 
 // Include for global exception handler
 app.UseExceptionHandler();

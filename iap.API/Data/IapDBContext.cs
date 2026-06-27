@@ -1,15 +1,16 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using iap.API.Models;
 
 namespace iap.API.Data
 {
-    public class IapDbContext : DbContext
+    public class IapDbContext : IdentityDbContext<User, IdentityRole<int>, int>
     {
         public IapDbContext(DbContextOptions<IapDbContext> options) : base(options)
         {
         }
 
-        public DbSet<User> Users { get; set; }
         public DbSet<Track> Tracks { get; set; }
         public DbSet<Playlist> Playlists { get; set; }
         public DbSet<PlaylistTrack> PlaylistTracks { get; set; }
@@ -20,6 +21,12 @@ namespace iap.API.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // Call identity configuration
+            base.OnModelCreating(modelBuilder);
+
+            // Set the table name for the User entity to "Users" instead of default
+            modelBuilder.Entity<User>().ToTable("Users");
+
             // Filter out soft-deleted records
             modelBuilder.Entity<Playlist>()
                 .HasQueryFilter(p => !p.IsDeleted);
