@@ -66,7 +66,7 @@ namespace iap.API.Services
             return Result<PlaylistDto>.Success(playlist.ToPlaylistDto());
         }
 
-        public async Task<Result<PlaylistDto>> CreateAsync(CreatePlaylistRequestDto playlistDto)
+        public async Task<Result<PlaylistDto>> CreateAsync(CreatePlaylistRequestDto playlistDto, int userId)
         {
             // Validate parent id
             if (playlistDto.ParentId.HasValue)
@@ -102,7 +102,7 @@ namespace iap.API.Services
 
             // Get model columns from dto to populate for new object
             var playlistModel = playlistDto.ToPlaylistFromCreateDto();
-            playlistModel.UserId = 1;
+            playlistModel.UserId = userId;
             playlistModel.CreatedAt = DateTime.UtcNow;
             playlistModel.IsDefault = false;
             playlistModel.IsDeleted = false;

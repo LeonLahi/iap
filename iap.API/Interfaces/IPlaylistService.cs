@@ -16,7 +16,7 @@ namespace iap.API.Interfaces
         Task<Result<PlaylistDto>> GetByIdAsync(int id);
         Task<Result<IEnumerable<PlaylistDto>>> GetAllDeletedAsync();
         Task<Result<PlaylistDto>> GetByIdDeletedAsync(int id);
-        Task<Result<PlaylistDto>> CreateAsync(CreatePlaylistRequestDto playlistDto);
+        Task<Result<PlaylistDto>> CreateAsync(CreatePlaylistRequestDto playlistDto, int userId);
         Task<Result<PlaylistDto>> UpdateAsync(int id, UpdatePlaylistRequestDto playlistDto);
         Task<Result<PlaylistDto>> SoftDeletePlaylistAsync(int id);
         Task<Result<PlaylistDto>> UndoSoftDeletePlaylistAsync(int id);

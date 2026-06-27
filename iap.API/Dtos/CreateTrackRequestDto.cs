@@ -13,14 +13,5 @@ namespace iap.API.Dtos
        public int DurationSeconds { get; set; }
        public string BlobUrl { get; set; } = String.Empty;
        public string? CoverArtUrl { get; set; }
-       public DateTimeOffset UploadedAt { get; set; }
-       public DateTimeOffset? UpdatedAt { get; set; }
-       public bool IsDeleted { get; set; }
-       public DateTimeOffset? DeletedAt { get; set; }
-       public string? OriginalTitle { get; set; }
-       public string? OriginalArtist { get; set; }
-       public string? OriginalAlbumName { get; set; }
-       public string? OriginalCoverArtUrl { get; set; }
-       public int UserId { get; set; }
     }
 }
