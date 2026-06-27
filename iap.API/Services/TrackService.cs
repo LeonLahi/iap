@@ -63,19 +63,19 @@ namespace iap.API.Services
             return Result<TrackDto>.Success(track.ToTrackDto());
         }
 
-        public async Task<Result<TrackDto>> CreateAsync(CreateTrackRequestDto trackDto)
+        public async Task<Result<TrackDto>> CreateAsync(CreateTrackRequestDto trackDto, int userId)
         {
 
             // Check for duplicate track name
             var existing = await _trackRepository
-                .GetByTitleAndUserAsync(trackDto.Title, trackDto.UserId);
+                .GetByTitleAndUserAsync(trackDto.Title, userId);
 
             if (existing is not null)
                 return Result<TrackDto>.Conflict("Track with this title already exists");
 
             // Get model columns from dto to populate for new object
             var trackModel = trackDto.ToTrackFromCreateDto();
-            trackModel.UserId = 1;
+            trackModel.UserId = userId;
             trackModel.UploadedAt = DateTime.UtcNow;
             trackModel.IsDeleted = false;
 

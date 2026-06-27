@@ -61,7 +61,7 @@ namespace iap.API.Services
             return Result<IEnumerable<MostPlayedDto>>.Success(dtos);
         }
 
-        public async Task<Result<ListeningSessionDto>> CreateAsync(CreateListeningSessionDto dto)
+        public async Task<Result<ListeningSessionDto>> CreateAsync(CreateListeningSessionDto dto, int userId)
         {
             var track = await _trackRepository.GetByIdAsync(dto.TrackId);
             if (track is null)
@@ -77,7 +77,7 @@ namespace iap.API.Services
 
             var session = new ListeningSession
             {
-                UserId = 1, // TODO: Change to get userId from JWT token
+                UserId = userId, // TODO: Change to get userId from JWT token
                 PlayedAt = DateTimeOffset.Now,
                 SecondsListened = dto.SecondsListened,
                 TrackId = dto.TrackId

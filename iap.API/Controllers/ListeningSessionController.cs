@@ -11,9 +11,12 @@ using iap.API.Common;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace iap.API.Controllers
 {
+    [Authorize]
     [Route("api/[controller]")]
     [ApiController]
 
@@ -66,12 +69,15 @@ namespace iap.API.Controllers
 
         public async Task<IActionResult> Create([FromBody] CreateListeningSessionDto Dto)
         {
-            var result = await _listeningSessionService.CreateAsync(Dto);
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+            var result = await _listeningSessionService.CreateAsync(Dto, userId);
 
             if (!result.IsSuccess)
                 return result.ToActionResult(this);
 
-            return CreatedAtAction(nameof(GetById), new { id = result.Value!.Id }, result.Value);
+            return CreatedAtAction(nameof(GetById), 
+                new { id = result.Value!.Id }, result.Value);
         }
     }
 
