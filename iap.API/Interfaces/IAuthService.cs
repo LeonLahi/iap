@@ -12,5 +12,6 @@ namespace iap.API.Interfaces
     public interface IAuthService
     {
         Task<Result<AuthResponseDto>> RegisterAsync(RegisterDto dto);
+        Task<Result<AuthResponseDto>> LoginAsync(LoginDto dto);
     }
 }

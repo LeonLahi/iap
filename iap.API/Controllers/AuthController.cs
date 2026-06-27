@@ -33,5 +33,16 @@ namespace iap.API.Controllers
        
             return Ok(result.Value);
         }   
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        {
+            var result = await _authService.LoginAsync(dto);
+
+            if (!result.IsSuccess)
+                return BadRequest(result);
+       
+            return Ok(result.Value);
+        }  
     }
 }

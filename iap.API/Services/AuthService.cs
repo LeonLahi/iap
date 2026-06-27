@@ -55,5 +55,31 @@ namespace iap.API.Services
 
             return Result<AuthResponseDto>.Success(response);
         }
+
+        public async Task<Result<AuthResponseDto>> LoginAsync(LoginDto dto)
+        {
+            // Find user by email
+            var user = await _userManager.FindByEmailAsync(dto.Email);
+            if (user is null)
+                return Result<AuthResponseDto>.NotFound("User not found.");
+
+            // Check if password is correct
+            var isPasswordValid = await _userManager.CheckPasswordAsync(user, dto.Password);
+            if (!isPasswordValid)
+                return Result<AuthResponseDto>.Unauthorized("Invalid credentials.");
+
+            var token = _tokenService.GenerateToken(user);
+
+            // Return token and user info
+            var response = new AuthResponseDto
+            {
+                Token = token,
+                Username = user.UserName!,
+                DisplayName = user.DisplayName,
+                Email = user.Email!
+            };
+
+            return Result<AuthResponseDto>.Success(response);
+        }
     }
 }
