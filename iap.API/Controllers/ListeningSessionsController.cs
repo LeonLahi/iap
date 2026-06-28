@@ -16,16 +16,16 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace iap.API.Controllers
 {
-    [Authorize]
+    // [Authorize]
     [Route("api/[controller]")]
     [ApiController]
 
-    public class ListeningSessionController : ControllerBase
+    public class ListeningSessionsController : ControllerBase
     {
         private readonly IapDbContext _context;
         private readonly IListeningSessionRepository _listeningSessionRepo;
         private readonly IListeningSessionService _listeningSessionService;
-        public ListeningSessionController(IapDbContext context, IListeningSessionRepository listeningSessionRepo, IListeningSessionService listeningSessionService)
+        public ListeningSessionsController(IapDbContext context, IListeningSessionRepository listeningSessionRepo, IListeningSessionService listeningSessionService)
         {
             _listeningSessionRepo = listeningSessionRepo;
             _context = context;
