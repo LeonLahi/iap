@@ -16,6 +16,11 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddRouting(options =>
+{
+    options.LowercaseUrls = true;
+});
+
 // Controllers with JSON settings
 builder.Services.AddControllers(options =>
 {

@@ -16,16 +16,16 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace iap.API.Controllers
 {
-    [Authorize]
+    // [Authorize]
     [Route("api/[controller]")]
     [ApiController]
 
-    public class TrackController : ControllerBase
+    public class TracksController : ControllerBase
     {
         private readonly IapDbContext _context;
         private readonly ITrackRepository _trackRepo;
         private readonly ITrackService _trackService;
-        public TrackController(IapDbContext context, ITrackRepository trackRepo, ITrackService trackService)
+        public TracksController(IapDbContext context, ITrackRepository trackRepo, ITrackService trackService)
         {
             _trackRepo = trackRepo;
             _trackService = trackService;
