@@ -16,17 +16,17 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace iap.API.Controllers
 {
-    [Authorize]
+    // [Authorize]
     [Route("api/[controller]")]
     [ApiController]
 
-    public class PlaylistController : ControllerBase
+    public class PlaylistsController : ControllerBase
     {
         private readonly IapDbContext _context;
         private readonly IPlaylistRepository _playlistRepo;
         private readonly IPlaylistService _playlistService;
         
-        public PlaylistController(IapDbContext context, IPlaylistRepository playlistRepo, IPlaylistService playlistService)
+        public PlaylistsController(IapDbContext context, IPlaylistRepository playlistRepo, IPlaylistService playlistService)
         {
             _playlistRepo = playlistRepo;
             _playlistService = playlistService;
