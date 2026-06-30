@@ -1,12 +1,33 @@
+import { Routes, Route, Navigate } from 'react-router-dom'
+import { useAuth } from './context/AuthContext'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
 import TracksPage from './pages/TracksPage'
+import ProtectedRoute from './components/ProtectedRoute'
 
 function App() {
-  return (
-    <div className="min-h-screen bg-gray-900 text-white p-4">
-      <h1 className="text-2xl font-bold">IAP</h1>
-      <TracksPage />
-    </div>
-  )
+    const { isAuthenticated } = useAuth()
+
+    return (
+        <Routes>
+            <Route
+                path="/login"
+                element={isAuthenticated ? <Navigate to="/" /> : <LoginPage />}
+            />
+            <Route
+                path="/register"
+                element={isAuthenticated ? <Navigate to="/" /> : <RegisterPage />}
+            />
+            <Route
+                path="/"
+                element={
+                    <ProtectedRoute>
+                        <TracksPage />
+                    </ProtectedRoute>
+                }
+            />
+        </Routes>
+    )
 }
 
 export default App
